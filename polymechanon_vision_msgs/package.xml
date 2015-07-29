@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>polymechanon_vision_msgs</name>
+  <version>0.1.0</version>
+  <description>The polymechanon_vision_msgs package contains all types of custom messages used in polymechanon_vision packages</description>
+
+  <maintainer email="nikos@todo.todo">nikos</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <build_depend>std_msgs</build_depend>
+  <run_depend>std_msgs</run_depend>
+
+  <build_depend>geometry_msgs</build_depend>
+  <run_depend>geometry_msgs</run_depend>
+
+</package>
