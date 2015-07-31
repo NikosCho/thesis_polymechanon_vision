@@ -3,14 +3,20 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
-
+#include "ros/ros.h"
 #include <opencv2/opencv.hpp>
 
+// Other class dependecies
 #include "label_detector/c_label.h"
+#include "label_detector/c_scanner.h"
+#include "label_detector/scanners/c_qr_scanner.h"
 
+using std::shared_ptr;
+using std::make_shared;
+
+class Scanner;
 
 namespace polymechanon_vision {
 
@@ -36,10 +42,14 @@ public:
 	void setInputImage(cv::Mat input_image);
 	void setSettings(DetectorSettings& settings);
 
+	void detect();
+
 private:
-	boost::shared_ptr<cv::Mat> input_image_;
+	shared_ptr<cv::Mat> input_image_;
 	DetectorSettings settings_;
 	std::vector<polymechanon_vision::Label> labels_;
+
+	shared_ptr<Scanner> scanner_;
 
 };
 

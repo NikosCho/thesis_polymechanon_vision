@@ -14,19 +14,19 @@ LabelDetectorNodeHandler::LabelDetectorNodeHandler()
 
 LabelDetectorNodeHandler::~LabelDetectorNodeHandler(){}
 
-
-
 void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& img_sub_msg)
 {	
 	cv::Mat camera_input;
-	// boost::shared_ptr<cv::Mat> input_image;
+	// // boost::shared_ptr<cv::Mat> input_image;
 
 	try  {
-		cv_bridge::CvImageConstPtr cv_ptr;
-		cv_ptr = cv_bridge::toCvShare(img_sub_msg,"bgr8");
-		// setCameraInput(cv_ptr->image);
-		camera_input = cv_ptr->image;
-		cvWaitKey(30);
+		if(img_sub_msg) {
+			cv_bridge::CvImageConstPtr cv_ptr;
+			cv_ptr = cv_bridge::toCvShare(img_sub_msg,"bgr8");
+			// setCameraInput(cv_ptr->image);
+			// camera_input = cv_ptr->image;
+			cvWaitKey(30);
+		}
 	}
 	catch (cv_bridge::Exception& e)  {
 		ROS_ERROR("LabelDetectorNodeHandler: Could not convert (image message) from '%s' to 'bgr8'.", img_sub_msg->encoding.c_str());
@@ -34,7 +34,8 @@ void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& i
 
 
 	/////////////////////////////////////////////////////
-	detector_.setInputImage(camera_input);
+	// detector_.setInputImage(camera_input);
+	// detector_.detect();
 	/////////////////////////////////////////////////////
 
 }
@@ -84,7 +85,7 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
 void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level)
 {	
 	DetectorSettings settings;
-    ROS_INFO("LabelDetector -- Reconfigure Request: \n[DEBUGGING]-%s \n[QR DETECTION]-%s \n[HZL DETECTION]-%s \n[QR-WIDTH] x (mm) ",
+    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[HZL DETECTION]-%s \n\t[QR-WIDTH] x (mm) ",
                 config.Debugging?"ON":"OFF",
                 config.QR_Switch?"ON":"OFF",
                 config.HZL_Switch?"ON":"OFF");

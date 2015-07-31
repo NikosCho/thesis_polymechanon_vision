@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 
+#include "ros/ros.h"
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/opencv.hpp>
@@ -11,9 +12,8 @@
 #include <dynamic_reconfigure/server.h>
 #include <label_detector/LabelDetectorConfig.h>
 
+// Other class dependecies
 #include "label_detector/c_label_detector.h"
-
-
 
 namespace polymechanon_vision {
 
