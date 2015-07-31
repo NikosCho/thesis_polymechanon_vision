@@ -1,5 +1,5 @@
 /*********************************************************************
-* test_something.cpp
+* config.h.in
 *
 * Software License Agreement (BSD License)
 *
@@ -33,44 +33,13 @@
 *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 *  POSSIBILITY OF SUCH DAMAGE.
 *
-* Authors: Nikos Cholis
+* Authors: Aris Synodinos
 *********************************************************************/
 
-#include "ros/ros.h"
-#include <gtest/gtest.h>
-#include "label_detector/c_label.h"
-#include "label_detector/c_label_detector.h"
-#include <label_detector/config_PP.h>  //PACKAGE_PATH 
+#ifndef CONFIG_PP_H
+#define CONFIG_PP_H
 
-static cv::String appendPackagePath(const std::string filepath)
-	{
-	  std::string return_path(PACKAGE_PATH);
-	  return_path.append(filepath);
-	  return return_path;
-	}
+/* for PACKAGE_PATH use */
+#define PACKAGE_PATH "/home/nikos/thesis_ws/src/label_detector"
 
-TEST(Label, setID) {
-	polymechanonvision::Label label;
-	EXPECT_EQ(1,label.setID());
-}
-
-TEST(LabelDetector, detect) {
-
-
-	std::string image_file_path(PACKAGE_PATH);
-	std::string rest_path("/test/samples/random_pic.png");
-	image_file_path.append(rest_path);
-
-	cv::Mat image_to_test;
-	image_to_test = cv::imread(image_file_path);
-
-	polymechanonvision::LabelDetector detector(image_to_test);
-
-	EXPECT_EQ(true,detector.detect());
-}
-
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "google_test_something");
-  return RUN_ALL_TESTS();
-}
+#endif // CONFIG_PP_H

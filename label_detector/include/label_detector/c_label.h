@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-namespace polymechanonvision {
+namespace polymechanon_vision {
 
 enum class LabelType
 {
@@ -34,5 +34,5 @@ private:
 
 };
 
-} // "namespace polymechanonvision"
+} // "namespace polymechanon_vision"
 #endif // LABEL_H

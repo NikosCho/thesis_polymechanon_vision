@@ -1,6 +1,6 @@
 #include "label_detector/c_label.h"
 
-namespace polymechanonvision {
+namespace polymechanon_vision {
 
 Label::Label()
 {
@@ -9,11 +9,11 @@ Label::Label()
 
 Label::~Label()
 {
-	
+
 }
 
 int Label::setID()
-{	
+{
 	static int labes_counter;
 	return id_ = ++labes_counter;
 }
@@ -43,4 +43,4 @@ std::string Label::getLabel() const
 	return this->label_;
 }
 
-}	// "namespace polymechanonvision"
+}	// "namespace polymechanon_vision"

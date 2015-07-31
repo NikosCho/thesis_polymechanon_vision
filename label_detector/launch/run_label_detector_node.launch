@@ -16,16 +16,15 @@
 
 	<!-- LABEL DETECTOR -->
 	<node pkg="label_detector" type="label_detector_node" name="label_detector" output="screen">
-		<param name="sub_image_topic" type="string" value="camera/image_raw" />
+		<param name="input_image_topic" type="string" value="camera/image_raw" />
 
 		<param name="Debugging" value="true" />
 		<param name="QR_Switch" value="true" />
 		<param name="HZL_Switch" value="true" />
-
-		<param name="Qrcode_side_length" value="182" />	
+		<param name="Qrcode_side_length" value="183" />
 	</node>
 
 	<!-- RQT -->
-	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" /> 
-	
+	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" />
+
 </launch>

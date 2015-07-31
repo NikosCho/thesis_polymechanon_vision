@@ -19,6 +19,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 find_package(Zbar REQUIRED)
 find_package(OpenCV REQUIRED)
 
+set(PACKAGE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(${PROJECT_SOURCE_DIR}/config/config_PP.h.in ${PROJECT_SOURCE_DIR}/include/label_detector/config_PP.h)
 
 generate_dynamic_reconfigure_options(
 	dyn_cfg/LabelDetector.cfg
@@ -31,6 +33,9 @@ catkin_package(
   CATKIN_DEPENDS polymechanon_vision_msgs
 #  DEPENDS system_lib
 )
+
+#enable c++11 features ??
+list( APPEND CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -ftest-coverage -fprofile-arcs")
 
 ###########
 ## Build ##
@@ -47,7 +52,8 @@ include_directories( include
 # )
 
 add_executable(label_detector_node 
-		src/label_detector_node.cpp
+		src/label_detector_main.cpp
+    src/c_label_detector_nodehandler.cpp
 
 		src/c_label_detector.cpp
 		src/c_label.cpp)

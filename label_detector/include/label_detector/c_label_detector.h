@@ -1,5 +1,5 @@
-#ifndef BARCODE_DETECOR_H
-#define BARCODE_DETECOR_H
+#ifndef LABEL_DETECTOR_H
+#define LABEL_DETECTOR_H
 
 #include <iostream>
 #include <string>
@@ -9,50 +9,45 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <dynamic_reconfigure/server.h>
-#include <label_detector/LabelDetectorConfig.h>
+#include "label_detector/c_label.h"
 
-namespace polymechanonvision {
 
-struct VisionSettings
+namespace polymechanon_vision {
+
+struct DetectorSettings
 {	
-	std::string TOPIC_TO_SUBSCRIBE;
 	bool DEBUGGING;
 	bool QR_ENABLED;
 	bool HZL_ENABLED;
 	int QRSIDE_LENGTH;		// milimeters
+
+	DetectorSettings(): DEBUGGING(false), QR_ENABLED(true), HZL_ENABLED(true), QRSIDE_LENGTH(182){}
 };
 
 
 class LabelDetector
 {
+
 public:
 	LabelDetector();
+	LabelDetector(cv::Mat input_image);
 	~LabelDetector();
 
-	void detect(cv::Mat& camera_input);
+	void setInputImage(cv::Mat input_image);
+	void setSettings(DetectorSettings& settings);
 
 private:
-	ros::NodeHandle n_;
-	image_transport::Subscriber sub_to_imag_;
-	dynamic_reconfigure::Server<label_detector::LabelDetectorConfig> dyn_rec_server_;
-	VisionSettings settings_;
+	boost::shared_ptr<cv::Mat> input_image_;
+	DetectorSettings settings_;
+	std::vector<polymechanon_vision::Label> labels_;
 
-	// cv::Mat camera_input_;
-	// cv::Mat camera_input_;
-
-	boost::shared_ptr<cv::Mat> sp_camera_input_;
-
-	// cv::Mat camera_input_;
-
-	void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-	void loadSettings(const ros::NodeHandle& node, VisionSettings& settings);
-	void dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level);
-	
-
-	void setCameraInput(cv::Mat input);
 };
- 
-} // "namespace polymechanonvision"
 
-#endif // BARCODE_DETECOR_H
+
+
+
+
+
+
+} // "namespace polymechanon_vision"
+#endif // LABEL_DETECTOR_H
