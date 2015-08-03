@@ -24,11 +24,11 @@ public:
 	~LabelDetectorNodeHandler();
 
 private:
-	ros::NodeHandle node_;
-	image_transport::Subscriber subscriber_to_img_node_;
-	dynamic_reconfigure::Server<label_detector::LabelDetectorConfig> dyn_rec_server_;
+	ros::NodeHandle _node;
+	image_transport::Subscriber _subscriber_to_img_node;
+	dynamic_reconfigure::Server<label_detector::LabelDetectorConfig> _dyn_rec_server;
 
-	LabelDetector detector_;
+	LabelDetector _detector;
 	
 	void imageCallback(const sensor_msgs::ImageConstPtr& msg);
 	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "camera/image_raw");	

@@ -15,32 +15,32 @@ Label::~Label()
 int Label::setID()
 {
 	static int labes_counter;
-	return id_ = ++labes_counter;
+	return _id = ++labes_counter;
 }
 
 int Label::getID() const
 {
-	return this->id_;
+	return this->_id;
 }
 
 void Label::setType(LabelType& type)
 {
-	type_ = type;
+	_type = type;
 }
 
 LabelType Label::getType() const
 {
-	return this->type_;
+	return this->_type;
 }
 
 void Label::setLabel(std::string& label)
 {
-	label_ = label;
+	_label = label;
 }
 
 std::string Label::getLabel() const
 {
-	return this->label_;
+	return this->_label;
 }
 
 }	// "namespace polymechanon_vision"

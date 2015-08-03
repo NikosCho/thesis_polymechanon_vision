@@ -4,12 +4,12 @@ namespace polymechanon_vision {
 
 LabelDetectorNodeHandler::LabelDetectorNodeHandler()
 {	
-	static const std::string topic_to_subscribe = loadTopic(node_);
-	image_transport::ImageTransport in_(node_);
-	subscriber_to_img_node_ = in_.subscribe( topic_to_subscribe, 1, &LabelDetectorNodeHandler::imageCallback, this);
+	static const std::string topic_to_subscribe = loadTopic(_node);
+	image_transport::ImageTransport in_(_node);
+	_subscriber_to_img_node = in_.subscribe( topic_to_subscribe, 1, &LabelDetectorNodeHandler::imageCallback, this);
 
-	loadDetectorSettings(node_);
-	dyn_rec_server_.setCallback(boost::bind(&LabelDetectorNodeHandler::dynRecCallback, this, _1, _2));
+	loadDetectorSettings(_node);
+	_dyn_rec_server.setCallback(boost::bind(&LabelDetectorNodeHandler::dynRecCallback, this, _1, _2));
 }
 
 LabelDetectorNodeHandler::~LabelDetectorNodeHandler(){}
@@ -17,16 +17,12 @@ LabelDetectorNodeHandler::~LabelDetectorNodeHandler(){}
 void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& img_sub_msg)
 {	
 	cv::Mat camera_input;
-	// // boost::shared_ptr<cv::Mat> input_image;
 
 	try  {
-		if(img_sub_msg) {
-			cv_bridge::CvImageConstPtr cv_ptr;
-			cv_ptr = cv_bridge::toCvShare(img_sub_msg,"bgr8");
-			// setCameraInput(cv_ptr->image);
-			// camera_input = cv_ptr->image;
-			cvWaitKey(30);
-		}
+		cv_bridge::CvImageConstPtr cv_ptr;
+		cv_ptr = cv_bridge::toCvShare(img_sub_msg,"bgr8");
+		camera_input = cv_ptr->image;
+		cvWaitKey(30);
 	}
 	catch (cv_bridge::Exception& e)  {
 		ROS_ERROR("LabelDetectorNodeHandler: Could not convert (image message) from '%s' to 'bgr8'.", img_sub_msg->encoding.c_str());
@@ -34,9 +30,17 @@ void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& i
 
 
 	/////////////////////////////////////////////////////
-	// detector_.setInputImage(camera_input);
-	// detector_.detect();
+	_detector.setInputImage(camera_input);
+	_detector.detect();
 	/////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
 
 }
 
@@ -48,11 +52,11 @@ std::string LabelDetectorNodeHandler::loadTopic(const ros::NodeHandle& node, std
 
 	auto gettopic = [&] (const std::string& name_of_topic_variable) {
 		std::string topic_param;
-		node_.getParam(name_of_topic_variable, topic_param);
+		node.getParam(name_of_topic_variable, topic_param);
 		return topic_param;
 	};
 
-	std::string topic = node_.hasParam(topic_param_name) ? gettopic(topic_param_name) : topic_name;
+	std::string topic = node.hasParam(topic_param_name) ? gettopic(topic_param_name) : topic_name;
 	ROS_INFO("LabelDetectorNodeHandler: subscribed for image input on \"%s\" ", topic.c_str());
 	return topic;
 }
@@ -78,7 +82,7 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
     else  node.setParam("label_detector/QR_Switch", settings.HZL_ENABLED);
     ROS_INFO("LabelDetectorNodeHandler: [HZL DETECTION]-%s ", settings.HZL_ENABLED?"ON":"OFF" );
 
-    if (other_settings_loaded)  detector_.setSettings(settings);
+    if (other_settings_loaded)  _detector.setSettings(settings);
 }
 
 // Dynamic reconfigure using command line reconfiguration or rqt-plugin
@@ -94,7 +98,7 @@ void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfi
     settings.QR_ENABLED = config.QR_Switch;
     settings.HZL_ENABLED = config.HZL_Switch;
 
-    detector_.setSettings(settings);
+    _detector.setSettings(settings);
 }
 
 } // "namespace polymechanon_vision"

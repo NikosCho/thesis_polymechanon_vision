@@ -11,6 +11,8 @@
 #include "label_detector/c_scanner.h"
 #include "label_detector/c_label.h"
 
+#include "ros/ros.h"
+
 using std::shared_ptr;
 
 namespace polymechanon_vision {
@@ -20,13 +22,17 @@ class QrScanner : public Scanner
 
 public:
 	QrScanner();
-	~QrScanner();
+	virtual ~QrScanner();
 
+	LabelType getType() const;
+	/* void setImageToScan(const shared_ptr<cv::Mat> input_image); */
 	bool scan();
 
+
 private:
-	static const LabelType type_ = LabelType::QRCODE; 
-	// shared_ptr<cv::Mat> image_to_scan_;
+	static const LabelType _type = LabelType::QRCODE;
+	/* shared_ptr<cv::Mat> image_to_scan_ */
+
 
 };
 

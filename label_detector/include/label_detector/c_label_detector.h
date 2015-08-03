@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <algorithm>
+#include <iterator>
 
 #include "ros/ros.h"
 #include <opencv2/opencv.hpp>
@@ -13,10 +15,11 @@
 #include "label_detector/c_scanner.h"
 #include "label_detector/scanners/c_qr_scanner.h"
 
+using std::vector;
 using std::shared_ptr;
 using std::make_shared;
-
-class Scanner;
+using std::none_of;
+using std::remove_if;
 
 namespace polymechanon_vision {
 
@@ -30,10 +33,8 @@ struct DetectorSettings
 	DetectorSettings(): DEBUGGING(false), QR_ENABLED(true), HZL_ENABLED(true), QRSIDE_LENGTH(182){}
 };
 
-
 class LabelDetector
 {
-
 public:
 	LabelDetector();
 	LabelDetector(cv::Mat input_image);
@@ -42,14 +43,19 @@ public:
 	void setInputImage(cv::Mat input_image);
 	void setSettings(DetectorSettings& settings);
 
-	void detect();
+
+	bool detect();
+	
 
 private:
-	shared_ptr<cv::Mat> input_image_;
-	DetectorSettings settings_;
-	std::vector<polymechanon_vision::Label> labels_;
+	shared_ptr<cv::Mat> _input_image;
+	DetectorSettings _settings;
+	std::vector<polymechanon_vision::Label> _labels;
+	std::vector<Scanner*> _scanners;
 
-	shared_ptr<Scanner> scanner_;
+	void setupScanners();
+	bool checkScannerbyType(const LabelType& label);
+	void removeScannerbyType(const LabelType& label);
 
 };
 

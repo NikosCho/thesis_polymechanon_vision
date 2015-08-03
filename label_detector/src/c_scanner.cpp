@@ -2,16 +2,22 @@
 
 namespace polymechanon_vision {
 
-Scanner::Scanner()
-{
-	image_to_scan_ = nullptr;
+Scanner::Scanner(shared_ptr<cv::Mat> input_image /* = nullptr */)
+{	
+	setImageToScan(input_image);
+	ROS_WARN("Scanner created!");
 }
 
-Scanner::~Scanner(){}
+Scanner::~Scanner(){ ROS_ERROR("Scanner deleted!"); }
 
-void Scanner::setImageToScan(shared_ptr<cv::Mat> input_image)
+LabelType Scanner::getType() const
+{
+	return _type;
+}
+
+void Scanner::setImageToScan(const shared_ptr<cv::Mat> input_image)
 {	
-	image_to_scan_ = input_image;
+	_image_to_scan = input_image;
 }
 
 bool Scanner::scan()
@@ -21,10 +27,6 @@ bool Scanner::scan()
 	return true;
 }
 
-void Scanner::showImage()
-{
-	// if (image_to_scan_)
-		// cv::imshow("fads",*image_to_scan_);
-}
+
 
 } // "namespace polymechanon_vision"

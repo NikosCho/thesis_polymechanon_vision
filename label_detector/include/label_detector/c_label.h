@@ -28,9 +28,9 @@ public:
 	std::string getLabel() const;
 
 private:
-	int id_;
-	LabelType type_;
-	std::string label_;
+	int _id;
+	LabelType _type;
+	std::string _label;
 
 };
 

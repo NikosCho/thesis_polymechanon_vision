@@ -10,6 +10,8 @@
 // Other class dependecies
 #include "label_detector/c_label.h"
 
+#include "ros/ros.h"
+
 using std::shared_ptr;
 
 namespace polymechanon_vision {
@@ -18,21 +20,18 @@ class Scanner
 {
 
 public:
-	Scanner();
-	~Scanner();
+	Scanner(shared_ptr<cv::Mat> input_image = nullptr);
+	virtual ~Scanner();
 
-	// void setImageToScan(cv::Mat* input_image);
-	void setImageToScan(shared_ptr<cv::Mat> input_image);
-	bool scan();
-	void showImage();
-
-protected:
-	shared_ptr<cv::Mat> image_to_scan_;
-
-private:
-	LabelType type_;
+	virtual LabelType getType() const;
+	void setImageToScan(const shared_ptr<cv::Mat> input_image);
+	virtual bool scan();
 	
-
+protected:
+	shared_ptr<cv::Mat> _image_to_scan;
+	
+private:
+	LabelType _type;
 };
 
 } // "namespace polymechanon_vision"

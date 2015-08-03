@@ -35,7 +35,10 @@ catkin_package(
 )
 
 #enable c++11 features ??
-list( APPEND CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -ftest-coverage -fprofile-arcs")
+# list( APPEND CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -ftest-coverage -fprofile-arcs")
+# list( APPEND CMAKE_CXX_FLAGS "-std=c++1y ${CMAKE_CXX_FLAGS} -g -ftest-coverage ")
+list( APPEND CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -ftest-coverage ")
+
 
 ###########
 ## Build ##
@@ -81,3 +84,8 @@ foreach(ITEM ${TESTS})
                                          src/c_label_detector.cpp)
     target_link_libraries(${filename} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 endforeach()
+
+
+
+# git fetch --all
+# git reset --hard origin/master
