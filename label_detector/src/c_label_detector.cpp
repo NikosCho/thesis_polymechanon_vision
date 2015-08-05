@@ -9,7 +9,7 @@ LabelDetector::LabelDetector()
 }
 
 LabelDetector::LabelDetector(cv::Mat input_image)
-{
+{	
 	setInputImage(input_image);
 }
 
@@ -34,8 +34,8 @@ bool LabelDetector::detect()
 {
 
 	setupScanners();
-	if(!scanners_.empty())
-	for ( auto scanner:scanners_ )
+	if(!_scanners.empty())
+	for ( auto scanner:_scanners )
 	{
 		scanner->setImageToScan(_input_image);
 		scanner->scan();
@@ -54,7 +54,7 @@ void LabelDetector::setupScanners()
 	// Qrscanner's setup
 	if ( _settings.QR_ENABLED && checkScannerbyType(LabelType::QRCODE) ) {
 		Scanner* new_scanner = new QrScanner();
-		scanners_.push_back(new_scanner);
+		_scanners.push_back(new_scanner);
 	} else if ( !_settings.QR_ENABLED ) {
 		removeScannerbyType(LabelType::QRCODE);
 	}
@@ -66,7 +66,7 @@ void LabelDetector::setupScanners()
 // Check if there is a scanner of this label's type
 bool LabelDetector::checkScannerbyType(const LabelType& label)
 {
-	bool type_is_absent = none_of(begin(scanners_), end(scanners_), [&label](const Scanner* sc) {
+	bool type_is_absent = none_of(begin(_scanners), end(_scanners), [&label](const Scanner* sc) {
 				return sc->getType() == label;
 			});
 	return type_is_absent;
@@ -76,7 +76,7 @@ bool LabelDetector::checkScannerbyType(const LabelType& label)
 void LabelDetector::removeScannerbyType(const LabelType& label)
 {	
 	// Way 1 ////
-	auto removeDisabled = remove_if(begin(scanners_), end(scanners_), [&label] (Scanner* sc) {	
+	auto removeDisabled = remove_if(begin(_scanners), end(_scanners), [&label] (Scanner* sc) {	
 				if ( sc->getType() == label ) {
 					delete sc;
 					return true;
@@ -84,15 +84,15 @@ void LabelDetector::removeScannerbyType(const LabelType& label)
 				return false;
 			});
 
-	scanners_.erase(removeDisabled, end(scanners_));
+	_scanners.erase(removeDisabled, end(_scanners));
 
 	// Way 2 ////
-	// for ( auto it = begin(scanners_); it != end(scanners_); )
+	// for ( auto it = begin(_scanners); it != end(_scanners); )
 	// {
 	// 	if ((*it)->getType() == label)
 	// 	{	
 	// 		delete *it;
-	// 		it = scanners_.erase(it);
+	// 		it = _scanners.erase(it);
 	// 	} else {
 	//       ++it;
 	//    }

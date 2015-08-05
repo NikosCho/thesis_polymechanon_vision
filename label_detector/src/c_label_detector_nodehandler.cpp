@@ -1,5 +1,9 @@
 #include "label_detector/c_label_detector_nodehandler.h"
 
+////////////////////
+#include <label_detector/config_PP.h>  //PACKAGE_PATH 
+/////////////////////
+
 namespace polymechanon_vision {
 
 LabelDetectorNodeHandler::LabelDetectorNodeHandler()
@@ -30,8 +34,21 @@ void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& i
 
 
 	/////////////////////////////////////////////////////
-	_detector.setInputImage(camera_input);
+	std::string image_file_path(PACKAGE_PATH);
+	// std::string rest_path("/test/samples/qr_pic2.png");
+	// std::string rest_path("/test/samples/qr_pic.jpg");
+	std::string rest_path("/test/samples/qr_pic2.jpg");
+	// std::string rest_path("/test/samples/qr_pic4.jpg");
+	image_file_path.append(rest_path);
+
+	cv::Mat image_to_test;
+	image_to_test = cv::imread(image_file_path);
+
+	_detector.setInputImage(image_to_test);
 	_detector.detect();
+	/////////////////////////////////////////////////////
+	// _detector.setInputImage(camera_input);
+	// _detector.detect();
 	/////////////////////////////////////////////////////
 
 
