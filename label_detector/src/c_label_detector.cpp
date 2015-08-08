@@ -21,7 +21,7 @@ void LabelDetector::setInputImage(cv::Mat input_image)
 		_input_image = make_shared<cv::Mat>(input_image);
 	}
 	catch ( std::bad_alloc& e)  {
-		ROS_ERROR("LabelDetector - setCameraInput(): bad_alloc exception while setting camera input.");
+		ROS_ERROR("LabelDetector::setCameraInput(): bad_alloc exception while setting camera input.");
 	}
 }
 

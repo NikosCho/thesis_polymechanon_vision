@@ -29,15 +29,15 @@ void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& i
 		cvWaitKey(30);
 	}
 	catch (cv_bridge::Exception& e)  {
-		ROS_ERROR("LabelDetectorNodeHandler: Could not convert (image message) from '%s' to 'bgr8'.", img_sub_msg->encoding.c_str());
+		ROS_ERROR("LabelDetectorNodeHandler::imageCallback() : Could not convert (image message) from '%s' to 'bgr8'.", img_sub_msg->encoding.c_str());
 	}
 
 
 	/////////////////////////////////////////////////////
 	std::string image_file_path(PACKAGE_PATH);
 	// std::string rest_path("/test/samples/qr_pic2.png");
-	// std::string rest_path("/test/samples/qr_pic.jpg");
-	std::string rest_path("/test/samples/qr_pic2.jpg");
+	std::string rest_path("/test/samples/qr_pic.jpg");
+	// std::string rest_path("/test/samples/qr_pic2.jpg");
 	// std::string rest_path("/test/samples/qr_pic4.jpg");
 	image_file_path.append(rest_path);
 
