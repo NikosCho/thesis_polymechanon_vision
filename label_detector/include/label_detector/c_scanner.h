@@ -13,8 +13,12 @@
 #include "ros/ros.h"
 
 using std::shared_ptr;
+using std::vector;
+
 
 namespace polymechanon_vision {
+
+typedef cv::Point2f Point2D;
 
 class Scanner
 {
@@ -26,12 +30,20 @@ public:
 	virtual LabelType getType() const;
 	void setImageToScan(const shared_ptr<cv::Mat> input_image);
 	virtual bool scan();
+	virtual cv::Mat getDebuggingImage();
+
+	virtual bool drawDetectedLabels(shared_ptr<cv::Mat> inputimage);
+	virtual bool drawDetectedLabels(cv::Mat &inputimage);
+	virtual cv::Mat getImageDetectedLabels(const cv::Mat &inputimage);
+	virtual vector<vector<Point2D> > getDetectedLabels();
 	
 protected:
 	shared_ptr<cv::Mat> _image_to_scan;
 	
 private:
 	LabelType _type;
+	vector<vector<Point2D> > _detected_labels;
+
 };
 
 } // "namespace polymechanon_vision"

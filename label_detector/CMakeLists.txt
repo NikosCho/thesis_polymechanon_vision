@@ -56,6 +56,7 @@ include_directories( include
 
 add_executable(label_detector_node 
     src/label_detector_main.cpp
+    src/TEST_c_label_detector_nodehandler.cpp
     src/c_label_detector_nodehandler.cpp
     src/c_label_detector.cpp
     src/c_label.cpp

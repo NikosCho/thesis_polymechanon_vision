@@ -8,9 +8,8 @@
 // -> sortMarkers():
 //		-  Na ftiaksw ena sortMarkers pou na mhn eksartatai apo to mhkos ths diagwniou metaksy top_right kai bottom_left.
 //
+// -> Na allaksw opou den eimai sigouros (kindynos "out of bounds") tis prospelaseis twn vector apo '[] me  '.at()'
 /////////////////////////////////////////////////////////////////////////////////////
-
-// #include <string>
 
 namespace polymechanon_vision {
 
@@ -28,6 +27,9 @@ LabelType QrScanner::getType() const
 
 bool QrScanner::scan()
 {	
+	// _some_image = (*_image_to_scan).clone();
+	if (_image_to_scan == nullptr ) throw std::runtime_error("[QrScanner]-scan() : image's pointer is nullptr (use 'setImageToScan()'). ");
+
 	cv::Mat caminput_gray(_image_to_scan->size(), CV_MAKETYPE(_image_to_scan->depth(), 1));    // To hold Grayscale Image
 	cv::Mat caminput_edges(caminput_gray.size(), CV_MAKETYPE(caminput_gray.depth(), 1));    // To hold Grayscale Image
 
@@ -44,7 +46,7 @@ bool QrScanner::scan()
 
 	// In case clusterMarkers() returned no group, stop scanning
 	if ( marker_groups.size() < 1 ) {
-		ROS_WARN("QrScanner::scan() : no clusters returned, even if the markers were 3.");
+		ROS_WARN("[QrScanner]-scan() : no clusters returned, even if the markers were 3.");
 		return false;	
 	}
 
@@ -57,67 +59,31 @@ bool QrScanner::scan()
 	// 	return false;	
 	// }	
 
-	cv::Mat some_image = (*_image_to_scan).clone();
+	_detected_labels.clear();    // remove previous labels detected
 
 	for ( auto marker_group : marker_groups ) {
 		vector<QrMarker> qr_markers = getMarkers(marker_group, alignment_markers, mass_centers);
+
 		sortMarkers(qr_markers);    // 0-Bottom_left , 1-Top_left , 2 - Top_right
+		sortMarkersVertices(qr_markers);
 
-		vector<Point2D> qr_code_vertices = findVertices(qr_markers);
+		vector<Point2D> qr_code_vertices = findSquare(qr_markers);
 
-
-		cv::putText(some_image, "BL" , qr_markers[0].mass_center, cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(51, 153, 255), 2, 8);
-		cv::putText(some_image, "TL" , qr_markers[1].mass_center, cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(153, 51, 255), 2, 8);
-		cv::putText(some_image, "TR" , qr_markers[2].mass_center, cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(51, 255, 153), 2, 8);
-
-
-		// drawVertices(some_image,qr_markers);
-
-		Point2D mid_point = findMid( qr_markers[0].mass_center, qr_markers[2].mass_center);
-		cv::circle(some_image, mid_point, 2,  cv::Scalar(0,255,255), 3, 8, 0 );
-
-
-		cv::circle(some_image, qr_markers[0].contour[0], 2,  cv::Scalar(0,0,255), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[0].contour[1], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[0].contour[2], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[0].contour[3], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[1].contour[0], 2,  cv::Scalar(0,0,255), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[1].contour[1], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[1].contour[2], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[1].contour[3], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[2].contour[0], 2,  cv::Scalar(0,0,255), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[2].contour[1], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[2].contour[2], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		cv::circle(some_image, qr_markers[2].contour[3], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-		
-
+		if ( qr_code_vertices.size() == 4 && isContourConvex(qr_code_vertices) )
+			_detected_labels.push_back(qr_code_vertices);
 	}
 
+	if( _detected_labels.size() == 0 )    return false;
 
-
-
-
-
-
-	// TEST ////////////////////
-	// cv::Mat some_image = (*_image_to_scan).clone();
-	// drawContours(some_image, alignment_markers);
-	// drawMassCenters(some_image,mass_centers);
-	std::ostringstream text;
-	text << "Groups found: " << marker_groups.size();	
-	// cv::putText(some_image, "geia", cv::Point(0, some_image.rows), cv::FONT_HERSHEY_PLAIN, 5, cv::Scalar(0,0,255), 2);
-	cv::rectangle(some_image, cv::Point(0, some_image.rows), cv::Point(some_image.cols, some_image.rows-25), cv::Scalar(0,0,0), CV_FILLED );
-	// cv::putText(some_image, text.str(), cv::Point(0, some_image.rows-5), cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0,255,0), 4);
-	cv::putText(some_image, text.str(), cv::Point(0, some_image.rows-7), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255,255,255), 1);
-
-	// DRAW XYZ - - - http://docs.opencv.org/master/d7/d53/tutorial_py_pose.html#gsc.tab=0
-
-	cv::imshow("Debugging-label_detector", some_image);
-	////////////////////////////
-
-
+	// drawDetectedLabels(_some_image);
+	// imshow("wraia", _some_image);
 
 	return true;
+}
+
+vector<vector<Point2D> > QrScanner::getDetectedLabels()
+{
+	return _detected_labels;
 }
 
 vector<vector<ContourPoint> > QrScanner::findAlignmentMarkers(const cv::Mat& canny_image)
@@ -175,7 +141,7 @@ vector<Point2D> QrScanner::findContoursMassCenters(const vector<vector<ContourPo
 // each column contains the marker's id. 
 vector< vector<int> > QrScanner::clusterMarkers(const vector<Point2D>& contours_mass_centers)
 {	
-	if ( contours_mass_centers.size() < 3 )    throw std::runtime_error("QrScanner::clusterMarkers() : input's size is less than 3. ");
+	if ( contours_mass_centers.size() < 3 )    throw std::runtime_error("[QrScanner]-clusterMarkers() : input's size is less than 3. ");
 
 	// Initializing groups.
 	// Groups is a 2D vector:
@@ -233,7 +199,7 @@ vector<Point2D> QrScanner::getMassCenters(const vector<int>& contours_by_id, con
 			mass_centers_to_return.push_back(mass_centers[id]);
 		});
 	} catch (const std::out_of_range& oor) {
-		ROS_ERROR("QrScanner::getMassCenters() : While accesing vector(mass_centers) by id \"out_of_range\" encountered");
+		ROS_ERROR("[QrScanner]-getMassCenters() : While accesing vector(mass_centers) by id \"out_of_range\" encountered");
 	}
 
 	return mass_centers_to_return;
@@ -249,7 +215,7 @@ vector<vector<ContourPoint> > QrScanner::getContours(const vector<int>& contours
 			contours_to_return.push_back(contours[id]);
 		});
 	} catch (const std::out_of_range& oor) {
-		ROS_ERROR("QrScanner::getContours() : While accesing vector(contours) by id \"out_of_range\" encountered");
+		ROS_ERROR("[QrScanner]-getContours() : While accesing vector(contours) by id \"out_of_range\" encountered");
 	}
 
 	return contours_to_return;
@@ -265,393 +231,269 @@ vector<QrMarker> QrScanner::getMarkers(const vector<int>& contours_by_id, const 
 			group_to_return.push_back(QrMarker(contours[id], mass_centers[id]));
 		});
 	} catch (const std::out_of_range& oor) {
-		ROS_ERROR("QrScanner::getMarkers() : While accesing vector(contours or mass_centers) by id \"out_of_range\" encountered");
+		ROS_ERROR("[QrScanner]-getMarkers() : While accesing vector(contours or mass_centers) by id \"out_of_range\" encountered");
 	}
 
 	return group_to_return;
 }
 
-// void QrScanner::sortMarkers(vector<QrMarker>& markers)
-// {
-// 	int top,bottom,right;
-// 	QrOrientation orientation;
-
-// 	float dist1,dist2,dist3;
-// 	dist1 = calculateDistance(markers[0].mass_center,markers[1].mass_center);
-// 	dist2 = calculateDistance(markers[1].mass_center,markers[2].mass_center);
-// 	dist3 = calculateDistance(markers[2].mass_center,markers[0].mass_center);
-
-// 	if ( dist1 > dist2 && dist1 > dist3)	{		// If the longest distance is 'dist1'
-// 		top=2;		// Set the top marker
-// 		bottom=0;	right=1;		// Set the other 2 vertices randomly
-// 	}
-// 	else if ( dist2 > dist1 && dist2 > dist3)	{		// If the longest distance is 'dist2'
-// 		top=0;		// Set the top marker
-// 		bottom=1;	right=2;		// Set the other 2 vertices randomly
-// 	}	
-// 	else if ( dist3 > dist1 && dist3 > dist2)	{		// If the longest distance is 'dist3'
-// 		top=1;		// Set the top marker
-// 		bottom=0;	right=2;		// Set the other 2 vertices randomly
-// 	}
-
-// 	// Now we are ready to check which one of the other 2 markers is the 'bottom'
-// 	// and which is the 'right' one
-// 	if ( markers[bottom].mass_center.x != markers[right].mass_center.x )	{		//To avoid divide by 0
-// 		float diagonal_slope;
-// 		diagonal_slope = calculateSlope(markers[bottom].mass_center, markers[right].mass_center);
-// 		Point2D proj_point=findProjection(markers[top].mass_center, markers[right].mass_center, markers[bottom].mass_center);
-
-// 		if ( diagonal_slope > 0 && proj_point.y > markers[top].mass_center.y)	{
-// 			orientation = QrOrientation::NORTH;	//NORTH
-// 		}
-// 		else if ( diagonal_slope < 0 && proj_point.y > markers[top].mass_center.y)	{
-// 			orientation = QrOrientation::EAST;	//EAST
-// 		}
-// 		else if ( diagonal_slope > 0 && proj_point.y < markers[top].mass_center.y)	{
-// 			orientation = QrOrientation::SOUTH;	//SOUTH
-// 		}
-// 		else if ( diagonal_slope < 0 && proj_point.y < markers[top].mass_center.y)	{
-// 			orientation = QrOrientation::WEST;	//WEST
-// 		}
-
-// 		int temp_vert;
-// 		switch(orientation)	{
-// 			case QrOrientation::NORTH:	//NORTH
-// 				if (markers[bottom].mass_center.x > markers[right].mass_center.x)	{
-// 					temp_vert = bottom;
-// 					bottom = right;
-// 					right = temp_vert;
-// 					// swap(bottom,right);
-// 				}
-// 				break;
-// 			case QrOrientation::EAST:	//EAST
-// 				if (markers[bottom].mass_center.x > markers[right].mass_center.x)	{
-// 					temp_vert = bottom;
-// 					bottom = right;
-// 					right = temp_vert;
-// 					// swap(bottom,right);
-
-// 				}
-// 				break;
-// 			case QrOrientation::SOUTH:	//SOUTH
-// 				if (markers[bottom].mass_center.x < markers[right].mass_center.x)	{
-// 					temp_vert = bottom;
-// 					bottom = right;
-// 					right = temp_vert;
-// 					// swap(bottom,right);
-
-// 				}
-// 				break;
-// 			case QrOrientation::WEST:	//WEST
-// 				if (markers[bottom].mass_center.x < markers[right].mass_center.x)	{
-// 					temp_vert = bottom;
-// 					bottom = right;
-// 					right = temp_vert;
-// 					// swap(bottom,right);
-
-// 				}
-// 				break;
-// 			default:
-// 				ROS_ERROR("qr_identifier: Orientation error..");
-// 		}//END of switch  
-// 	}
-// 	// In case we cant find slope (when the 2 markers have the same x coordinate ) 
-// 	// we will use the height difference (y coordinate) of them and the position of the top marker
-// 	// according to them   
-// 	else if (markers[bottom].mass_center.x == markers[right].mass_center.x)	{
-// 		int temp_vert;
-// 		if ( markers[bottom].mass_center.y > markers[right].mass_center.y && markers[top].mass_center.x < markers[bottom].mass_center.x )	{		
-// 			temp_vert = bottom;
-// 			bottom = right;
-// 			right = temp_vert;
-// 			orientation = QrOrientation::NORTH; //NORTH (or WEST)
-// 		}
-// 		else if ( markers[bottom].mass_center.y < markers[right].mass_center.y && markers[top].mass_center.x < markers[bottom].mass_center.x )	{
-// 			// Ιncidentally the marker were set in the right way
-// 			orientation = QrOrientation::WEST; //WEST (or NORTH)
-// 		}
-// 		else if ( markers[bottom].mass_center.y > markers[right].mass_center.y && markers[top].mass_center.x > markers[bottom].mass_center.x )	{
-// 			// Ιncidentally the marker were set in the right way
-// 			orientation = QrOrientation::EAST; //EAST (or SOUTH)
-// 		}
-// 		else if ( markers[bottom].mass_center.y < markers[right].mass_center.y && markers[top].mass_center.x > markers[bottom].mass_center.x )	{
-// 			temp_vert = bottom;
-// 			bottom = right;
-// 			right = temp_vert;
-// 			orientation = QrOrientation::SOUTH; //SOUTH (or EAST)
-// 		}
-// 	}
-
-// 	// vector<QrMarker> temp{markers[bottom], markers[top], markers[right]};
-// 	// markers = temp;
-// 	markers = vector<QrMarker>{markers[bottom], markers[top], markers[right]};
-
-// }
-
 void QrScanner::sortMarkers(vector<QrMarker>& markers)
-{	
-	if ( markers.size() != 3 )    throw std::runtime_error("QrScanner::sortMarkers() : input's size is not 3. ");
+{
+	int top,bottom,right;
+	QrOrientation orientation;
 
-	int top_left, bottom_left, top_right;    // To hold the id of each marker that we located
-
-	// Calculate the distance between all points
 	float dist1,dist2,dist3;
 	dist1 = calculateDistance(markers[0].mass_center,markers[1].mass_center);
 	dist2 = calculateDistance(markers[1].mass_center,markers[2].mass_center);
 	dist3 = calculateDistance(markers[2].mass_center,markers[0].mass_center);
 
-	// Marker not involved in the longest distance, among them, is the 'top_left'
-	// if ( dist1 > dist2 && dist1 > dist3)    top_left = 2;
-	// else if ( dist2 > dist1 && dist2 > dist3)    top_left = 0;	
-	// else if ( dist3 > dist1 && dist3 > dist2)    top_left = 1;	
-	if ( dist1 > dist2 && dist1 > dist3 )	{
-		top_left = 2;		
-		bottom_left = 0;	top_right = 1;		// Set the other 2 vertices randomly
+	if ( dist1 > dist2 && dist1 > dist3)	{		// If the longest distance is 'dist1'
+		top=2;		// Set the top marker
+		bottom=0;	right=1;		// Set the other 2 vertices randomly
 	}
-	else if ( dist2 > dist1 && dist2 > dist3 )	{
-		top_left = 0;		
-		bottom_left = 1;	top_right = 2;		// Set the other 2 vertices randomly
+	else if ( dist2 > dist1 && dist2 > dist3)	{		// If the longest distance is 'dist2'
+		top=0;		// Set the top marker
+		bottom=1;	right=2;		// Set the other 2 vertices randomly
 	}	
-	else if ( dist3 > dist1 && dist3 > dist2 )	{
-		top_left = 1;		
-		bottom_left = 0;	top_right = 2;		// Set the other 2 vertices randomly
+	else if ( dist3 > dist1 && dist3 > dist2)	{		// If the longest distance is 'dist3'
+		top=1;		// Set the top marker
+		bottom=0;	right=2;		// Set the other 2 vertices randomly
 	}
 
-	// Find the projection of top_left marker on the line formed by the other 2 markers
-	Point2D proj_point = findProjection(markers[top_left].mass_center, markers[bottom_left].mass_center, markers[top_right].mass_center);
-	
-	Point2D top_marker = markers[top_left].mass_center;    // Used to hold the top left marker's id (just to keep follwing lines cleaner)
-	
-	// cout << top_marker.x << " , " << top_marker.y << endl;
+	// Now we are ready to check which one of the other 2 markers is the 'bottom'
+	// and which is the 'right' one
+	if ( markers[bottom].mass_center.x != markers[right].mass_center.x )	{		//To avoid divide by 0
+		float diagonal_slope;
+		diagonal_slope = calculateSlope(markers[bottom].mass_center, markers[right].mass_center);
+		// Point2D proj_point=findProjection(markers[top].mass_center, markers[right].mass_center, markers[bottom].mass_center);
+		Point2D proj_point=findMiddlePoint(markers[right].mass_center, markers[bottom].mass_center);
 
-	// Now we will find the orientation of top marker according to its projection
-	int	orientation;
-	// Orientation //////////
-	//           0   x --------------- x++
-	//           y           |
-	//           |      0    |     1
-	//           |           |
-	//           |  ---------P-----------
-	//           |           |
-	//          y++     3    |    2
-	//                       |
-	////////////////////////////////////////
-	if ( top_marker.x <= proj_point.x ) {
-		if ( top_marker.y <= proj_point.y )    orientation = 0;
-		else if ( top_marker.y > proj_point.y )    orientation = 3;
+		if ( diagonal_slope > 0 && proj_point.y > markers[top].mass_center.y)	{
+			orientation = QrOrientation::NORTH;	//NORTH
+		}
+		else if ( diagonal_slope < 0 && proj_point.y > markers[top].mass_center.y)	{
+			orientation = QrOrientation::EAST;	//EAST
+		}
+		else if ( diagonal_slope > 0 && proj_point.y < markers[top].mass_center.y)	{
+			orientation = QrOrientation::SOUTH;	//SOUTH
+		}
+		else if ( diagonal_slope < 0 && proj_point.y < markers[top].mass_center.y)	{
+			orientation = QrOrientation::WEST;	//WEST
+		}
+
+		int temp_vert;
+		switch(orientation)	{
+			case QrOrientation::NORTH:	//NORTH
+				if (markers[bottom].mass_center.x > markers[right].mass_center.x)	{
+					temp_vert = bottom;
+					bottom = right;
+					right = temp_vert;
+					// swap(bottom,right);
+				}
+				break;
+			case QrOrientation::EAST:	//EAST
+				if (markers[bottom].mass_center.x > markers[right].mass_center.x)	{
+					temp_vert = bottom;
+					bottom = right;
+					right = temp_vert;
+					// swap(bottom,right);
+
+				}
+				break;
+			case QrOrientation::SOUTH:	//SOUTH
+				if (markers[bottom].mass_center.x < markers[right].mass_center.x)	{
+					temp_vert = bottom;
+					bottom = right;
+					right = temp_vert;
+					// swap(bottom,right);
+
+				}
+				break;
+			case QrOrientation::WEST:	//WEST
+				if (markers[bottom].mass_center.x < markers[right].mass_center.x)	{
+					temp_vert = bottom;
+					bottom = right;
+					right = temp_vert;
+					// swap(bottom,right);
+
+				}
+				break;
+			default:
+				ROS_ERROR("qr_identifier: Orientation error..");
+		}//END of switch  
 	}
-	else if ( top_marker.x > proj_point.x ) {
-		if ( top_marker.y <= proj_point.y )    orientation = 1;
-		else if ( top_marker.y > proj_point.y )    orientation = 2;
+	// In case we cant find slope (when the 2 markers have the same x coordinate ) 
+	// we will use the height difference (y coordinate) of them and the position of the top marker
+	// according to them   
+	else if (markers[bottom].mass_center.x == markers[right].mass_center.x)	{
+		int temp_vert;
+		if ( markers[bottom].mass_center.y > markers[right].mass_center.y && markers[top].mass_center.x < markers[bottom].mass_center.x )	{		
+			temp_vert = bottom;
+			bottom = right;
+			right = temp_vert;
+			orientation = QrOrientation::NORTH; //NORTH (or WEST)
+		}
+		else if ( markers[bottom].mass_center.y < markers[right].mass_center.y && markers[top].mass_center.x < markers[bottom].mass_center.x )	{
+			// Ιncidentally the marker were set in the right way
+			orientation = QrOrientation::WEST; //WEST (or NORTH)
+		}
+		else if ( markers[bottom].mass_center.y > markers[right].mass_center.y && markers[top].mass_center.x > markers[bottom].mass_center.x )	{
+			// Ιncidentally the marker were set in the right way
+			orientation = QrOrientation::EAST; //EAST (or SOUTH)
+		}
+		else if ( markers[bottom].mass_center.y < markers[right].mass_center.y && markers[top].mass_center.x > markers[bottom].mass_center.x )	{
+			temp_vert = bottom;
+			bottom = right;
+			right = temp_vert;
+			orientation = QrOrientation::SOUTH; //SOUTH (or EAST)
+		}
 	}
 
-	if ( orientation == 0 || orientation == 3 ) {
-		if ( markers[bottom_left].mass_center.x > markers[top_right].mass_center.x )    std::swap(bottom_left, top_right);
-	} else if ( orientation == 1 || orientation == 2 ) {
-		if ( markers[bottom_left].mass_center.x <= markers[top_right].mass_center.x )    std::swap(bottom_left, top_right);
-	}
-
-	markers = vector<QrMarker>{markers[bottom_left], markers[top_left], markers[top_right]};
+	// vector<QrMarker> temp{markers[bottom], markers[top], markers[right]};
+	// markers = temp;
+	markers = vector<QrMarker>{markers[bottom], markers[top], markers[right]};
 
 }
 
-vector<Point2D> QrScanner::findVertices(vector<QrMarker>& markers)
+// void QrScanner::sortMarkers(vector<QrMarker>& markers)
+// {	
+// 	if ( markers.size() != 3 )    throw std::runtime_error("QrScanner::sortMarkers() : input's size is not 3. ");
+
+// 	int top_left, bottom_left, top_right;    // To hold the id of each marker that we located
+
+// 	// Calculate the distance between all points
+// 	float dist1,dist2,dist3;
+// 	dist1 = calculateDistance(markers[0].mass_center,markers[1].mass_center);
+// 	dist2 = calculateDistance(markers[1].mass_center,markers[2].mass_center);
+// 	dist3 = calculateDistance(markers[2].mass_center,markers[0].mass_center);
+
+// 	// Marker not involved in the longest distance, among them, is the 'top_left' 
+// 	// Set the other 2 markers (bottom_left and top_right) at RANDOM. 
+// 	if ( dist1 > dist2 && dist1 > dist3 )	{
+// 		top_left = 2;		
+// 		bottom_left = 0;	top_right = 1;		
+// 	}
+// 	else if ( dist2 > dist1 && dist2 > dist3 )	{
+// 		top_left = 0;		
+// 		bottom_left = 1;	top_right = 2;		
+// 	}	
+// 	else if ( dist3 > dist1 && dist3 > dist2 )	{
+// 		top_left = 1;		
+// 		bottom_left = 0;	top_right = 2;		
+// 	}
+
+// 	// Find the projection of top_left marker on the line formed by the other 2 markers
+// 	Point2D proj_point = findProjection(markers[top_left].mass_center, markers[bottom_left].mass_center, markers[top_right].mass_center);
+// 	Point2D top_marker = markers[top_left].mass_center;    // Used to hold the top left marker's id (just to keep the following lines cleaner)
+
+// 	// Now we will find the orientation of top marker according to its projection
+// 	int	orientation;
+// 	// Orientation ///////////// (cv::Mat's axes)
+// 	//           0   x --------------- x++
+// 	//           y           |
+// 	//           |      0    |     1
+// 	//           |           |
+// 	//           |  ---------P-----------
+// 	//           |           |
+// 	//           |      3    |    2
+// 	//          y++          |
+// 	////////////////////////////////////////
+// 	if ( top_marker.x <= proj_point.x ) {
+// 		if ( top_marker.y <= proj_point.y )    orientation = 0;
+// 		else if ( top_marker.y > proj_point.y )    orientation = 3;
+// 	}
+// 	else if ( top_marker.x > proj_point.x ) {
+// 		if ( top_marker.y <= proj_point.y )    orientation = 1;
+// 		else if ( top_marker.y > proj_point.y )    orientation = 2;
+// 	}
+
+// 	if ( orientation == 0 || orientation == 3 ) {
+// 		if ( markers[bottom_left].mass_center.x > markers[top_right].mass_center.x )    std::swap(bottom_left, top_right);
+// 	} else if ( orientation == 1 || orientation == 2 ) {
+// 		if ( markers[bottom_left].mass_center.x <= markers[top_right].mass_center.x )    std::swap(bottom_left, top_right);
+// 	}
+
+// 	markers = vector<QrMarker>{markers[bottom_left], markers[top_left], markers[top_right]};
+
+// }
+
+// void QrScanner::sortMarkers(vector<QrMarker>& markers)
+// {	
+// 	if ( markers.size() != 3 )    throw std::runtime_error("QrScanner::sortMarkers() : input's size is not 3. ");
+
+// 	findTopLeftMarker(markers);
+// 	// findTopLeftMarker2(markers);
+
+// 	// int top_left, bottom_left, top_right;    // To hold the id of each marker that we located
+
+// 	Point2D proj_point0 = findProjection(markers[0].mass_center, markers[1].mass_center, markers[2].mass_center);
+// 	// cv::line(_some_image, markers[0].mass_center, proj_point0, cv::Scalar(0,0,255), 2);
+// 	Point2D mid_point0 = findMid(markers[1].mass_center, markers[2].mass_center);
+// 	float dist0 = calculateDistance(proj_point0, mid_point0);
+
+// 	Point2D proj_point1 = findProjection(markers[1].mass_center, markers[0].mass_center, markers[2].mass_center);
+// 	// cv::line(_some_image, markers[1].mass_center, proj_point1, cv::Scalar(0,255,0), 2);
+// 	Point2D mid_point1 = findMiddlePoint(markers[0].mass_center, markers[2].mass_center);
+// 	float dist1 = calculateDistance(proj_point1, mid_point1);
+
+// 	Point2D proj_point2 = findProjection(markers[2].mass_center, markers[0].mass_center, markers[1].mass_center);
+// 	// cv::line(_some_image, markers[2].mass_center, proj_point2, cv::Scalar(255,0,0), 2);
+// 	Point2D mid_point2 = findMiddlePoint(markers[0].mass_center, markers[1].mass_center);
+// 	float dist2 = calculateDistance(proj_point2, mid_point2);
+
+
+// 	if ( dist0 < dist1 && dist0 < dist2 ) top_left = 0;
+// 	else if ( dist1 < dist0 && dist1 < dist2 ) 	top_left = 1;
+
+// 	else if ( dist2 < dist0 && dist2 < dist1 ) 	top_left = 2;
+
+// }
+
+
+// Iterate through markers and shift their points so that the first point ( '[0]' / 'begin()' ) is
+// the outer point of qrcode.
+// (One of the 4 vertices forming the qrcode's square)
+void QrScanner::sortMarkersVertices(vector<QrMarker>& markers)
 {	
-	if ( markers.size() != 3 )    throw std::runtime_error("QrScanner::sortMarkers() : input's size is not 3. ");
+	if ( markers.size() != 3 )    throw std::runtime_error("[QrScanner]-findVertices() : input's size is not 3. ");
 
 	// Find the center of qr codes contour, using bottom_left and top_right markers  
-	Point2D mid_point = findMid( markers[0].mass_center, markers[2].mass_center);
+	Point2D mid_point = findMiddlePoint( markers[0].mass_center, markers[2].mass_center);
 
-	float maxdistance;		// To hold the maximum distance calculated (for each pair of center and contour)
-	float tempdistance;		// To temporarily save the distance to the contour we are examining
-
-	vector<float> distance_memory;
-	distance_memory.reserve(3);
-
-	// Iterate through markers, calculate the distance between 
-    
-	// for ( auto marker : markers ) {
+    // SPECIAL COMMENT ///////////////
+    // The code line below initializes a new object, not an iterator for its elements:
+	// [DO NOT USE] --- " for ( auto marker : markers ) " ---
 	for ( auto marker = begin(markers) ; marker != end(markers); marker++ ) {
+		vector<float> distance_memory;
+		distance_memory.reserve(4);
 
+		// Create a vector to hold the distance between each point (of our marker) and mid_point
 		for_each(begin(marker->contour), end(marker->contour), [&](const ContourPoint& point) {
 			distance_memory.push_back(calculateDistance(point,mid_point));
 		});
 
-		auto mark = marker->contour;
-
-		cout << "===================================" << endl;
-		cout << "Distances - [";
-		for_each(begin(distance_memory), end(distance_memory),[](int num){  cout << num << " ,";   });
-		cout << " ] " << endl;
+		if ( distance_memory.size() != marker->contour.size() )    throw std::runtime_error("[QrScanner]-findVertices() : vector's sizes are not equal. ");
 
 		auto it = max_element(begin(distance_memory), end(distance_memory));
-
-		cout << "MAX - ["<< *it << " ] " << endl;
-
-		int dist = distance( begin(distance_memory), it );
-
-		cout << "Dist - ["<< dist << " ] " << endl;
-
-
-		cout << "Before - [";
-		for_each(marker->contour.begin(),marker->contour.end(),[](ContourPoint num){  cout << " (" << num.x << " ," << num.y << ") ";   });
-		cout << " ] " << endl;
-
-		// if ( distance_memory.size() == marker.contour.size()){
-			// std::rotate(begin(marker.contour), begin(marker.contour) + dist, end(marker.contour));
-			std::rotate(marker->contour.begin(), marker->contour.begin() + dist, marker->contour.end());
-			// cout << "yieeeeeeeee"<< endl;
-		// }
-
-
-
-		cout << "Rotated - [";
-		for_each(marker->contour.begin(),marker->contour.end(),[](ContourPoint num){  cout << " (" << num.x << " ," << num.y << ") ";   });
-		cout << " ] " << endl;
-
-		distance_memory.clear();
+		int dist = std::distance( begin(distance_memory), it );
+		// Shift all the elements of marker, so that the outer one lands on first position of vector ([0])
+		std::rotate(marker->contour.begin(), marker->contour.begin() + dist, marker->contour.end());
 	}
-
-	// WTF ????????????????????????????????????????????????????????????????????????
-
-	// std::vector<int>::iterator marker;
-	for ( auto marker = begin(markers) ; marker != end(markers); marker++ ) {
-
-	// for ( auto marker : markers ) {
-
-	// for_each( begin(markers), end(markers), 
-
-
-
-		cout << "AGAIN - [";
-		for_each(marker->contour.begin(),marker->contour.end(),[](ContourPoint num){  cout << " (" << num.x << " ," << num.y << ") ";   });
-		cout << " ] " << endl;
-
-		// distance_memory.clear();
-
-		cout << " =TYPE --- " << typeid(marker).name() << endl;
-
-	// });
-	}
-
-
-
-		// vector<int> distance_memory = { 1,2,3,4,5,20,6,7,8,9,10,};
-		// cout << "BEFORE - [";
-		// for_each(begin(distance_memory), end(distance_memory),[](int num){  cout << num << " ,";   });
-		// cout << " ] " << endl;
-
-
-		// auto it = max_element(begin(distance_memory), end(distance_memory));
-		// std::rotate(begin(distance_memory), it, end(distance_memory));
-		// cout << "AFTER - [";
-		// for_each(begin(distance_memory), end(distance_memory),[](int num){  cout << num << " ,";   });
-		// cout << " ] " << endl;
-
-
-
-	vector<Point2D> vertices_to_return;
-
-	return vertices_to_return; 
 }
 
-// vector<Point2D> QrScanner::findVertices(vector<QrMarker>& markers)
-// {	
-// 	if ( markers.size() != 3 )    throw std::runtime_error("QrScanner::sortMarkers() : input's size is not 3. ");
+vector<Point2D> QrScanner::findSquare(const vector<QrMarker>& markers)
+{	
+	if ( markers.size() != 3 )    throw std::runtime_error("[QrScanner]-findSquare() : input's size is not 3. ");
 
-// 	// Find the center of qr codes contour, using bottom_left and top_right markers  
-// 	Point2D mid_point = findMid( markers[0].mass_center, markers[2].mass_center);
+	vector<Point2D> bottom_side_line = { markers[0].contour[0], markers[0].contour[1] };
+	vector<Point2D> right_side_line = { markers[2].contour[0], markers[2].contour[3] };
 
-// 	float maxdistance;		// To hold the maximum distance calculated (for each pair of center and contour)
-// 	float tempdistance;		// To temporarily save the distance to the contour we are examining
-
-// 	vector<float> distance_memory;
-// 	distance_memory.reserve(3);
-
-// 	// Iterate through markers, calculate the distance between 
-
-// 	for ( auto marker : markers ) {
-// 		for_each(begin(marker.contour), end(marker.contour), [&](const ContourPoint& point) {
-// 			distance_memory.push_back(calculateDistance(point,mid_point));
-// 		});
-
-// 		auto mark = marker.contour;
-
-// 		cout << "===================================" << endl;
-// 		cout << "Distances - [";
-// 		for_each(begin(distance_memory), end(distance_memory),[](int num){  cout << num << " ,";   });
-// 		cout << " ] " << endl;
-
-// 		auto it = max_element(begin(distance_memory), end(distance_memory));
-
-// 		cout << "MAX - ["<< *it << " ] " << endl;
-
-// 		int dist = distance( begin(distance_memory), it );
-
-// 		cout << "Dist - ["<< dist << " ] " << endl;
-
-
-// 		cout << "Before - [";
-// 		for_each(marker.contour.begin(),marker.contour.end(),[](ContourPoint num){  cout << " (" << num.x << " ," << num.y << ") ";   });
-// 		cout << " ] " << endl;
-
-// 		// if ( distance_memory.size() == marker.contour.size()){
-// 			// std::rotate(begin(marker.contour), begin(marker.contour) + dist, end(marker.contour));
-// 			std::rotate(marker.contour.begin(), marker.contour.begin() + dist, marker.contour.end());
-// 			// cout << "yieeeeeeeee"<< endl;
-// 		// }
-
-
-
-// 		cout << "Rotated - [";
-// 		for_each(marker.contour.begin(),marker.contour.end(),[](ContourPoint num){  cout << " (" << num.x << " ," << num.y << ") ";   });
-// 		cout << " ] " << endl;
-
-// 		distance_memory.clear();
-// 	}
-
-// 	// WTF ????????????????????????????????????????????????????????????????????????
-
-// 	// std::vector<int>::iterator marker;
-// 	for ( auto marker = begin(markers) ; marker != end(markers); marker++ ) {
-
-// 	// for ( auto marker : markers ) {
-
-// 	// for_each( begin(markers), end(markers), 
-
-
-
-// 		cout << "AGAIN - [";
-// 		for_each(marker->contour.begin(),marker->contour.end(),[](ContourPoint num){  cout << " (" << num.x << " ," << num.y << ") ";   });
-// 		cout << " ] " << endl;
-
-// 		// distance_memory.clear();
-
-// 		cout << " =TYPE --- " << typeid(marker).name() << endl;
-
-// 	// });
-// 	}
-
-
-
-// 		// vector<int> distance_memory = { 1,2,3,4,5,20,6,7,8,9,10,};
-// 		// cout << "BEFORE - [";
-// 		// for_each(begin(distance_memory), end(distance_memory),[](int num){  cout << num << " ,";   });
-// 		// cout << " ] " << endl;
-
-
-// 		// auto it = max_element(begin(distance_memory), end(distance_memory));
-// 		// std::rotate(begin(distance_memory), it, end(distance_memory));
-// 		// cout << "AFTER - [";
-// 		// for_each(begin(distance_memory), end(distance_memory),[](int num){  cout << num << " ,";   });
-// 		// cout << " ] " << endl;
-
-
-
-// 	vector<Point2D> vertices_to_return;
-
-// 	return vertices_to_return; 
-// }
+	vector<Point2D> vertices_to_return = {  markers[0].contour[0],
+											markers[1].contour[0],
+											markers[2].contour[0],
+											findIntersection(bottom_side_line, right_side_line) };
+	return vertices_to_return; 
+}
 
 
 template<typename Ta, typename Tb>
@@ -660,95 +502,211 @@ double QrScanner::calculateDistance(const Ta& pointA, const Tb& pointB)
 	return sqrt(pow(abs(pointA.x - pointB.x),2) + pow(abs(pointA.y - pointB.y),2)) ; 
 }
 
+template<typename Ta, typename Tb>
+Ta QrScanner::findMiddlePoint(const Ta& pointA, const Tb& pointB)
+{
+	return Ta((pointA.x+pointB.x)/2, (pointA.y+pointB.y)/2);
+}
+
 template<typename T>
 double QrScanner::calculateSlope(const T& pointA, const T& pointB)
 {
-	float dx,dy;
-	dx = pointA.x - pointB.x;
-	dy = pointA.y - pointB.y;
-
-	if (dx == 0)
-		throw std::runtime_error( "QrScanner::calculateSlope() : division by zero encountered." );
-
-	return -(dy / dx);
+	if (pointA.x - pointB.x == .0)    throw std::runtime_error( "[QrScanner]-calculateSlope() : division by zero encountered." );	
+	return (pointA.y - pointB.y) / (pointA.x - pointB.x);
 }
+
+template<typename T>
+double QrScanner::calculateAngle(const T& pointA, const T& center, const T& pointB)
+{	
+	double a = calculateDistance(pointA, pointB);
+	double b = calculateDistance(pointA, center);
+	double c = calculateDistance(pointB, center);
+	return acos((pow(b,2) + pow(c,2) - pow(a,2)) / (2*a*b));
+	// return angle * 180 / M_PI;
+}
+
+// Line equation: ax + by + c = 0  ///////////////////////////////////////////////////////////////////////////
+template<typename T>
+T QrScanner::findIntersection(const vector<T>& lineA, const vector<T>& lineB)
+{		
+	if ( lineA.size() != 2 && lineB.size() !=2 )    throw std::runtime_error("[QrScanner]-findIntersection() : wrong input vectors('lines') sizes. ");
 	
-// ERROR HANDLING ////////////////////////
+	// Equation of each line : a*x + b*y + c = 0
+	// Compute the coefficients of the first line
+	double a1, b1, c1;
+	calculateCoefficients(lineA[0], lineA[1], a1, b1, c1);
+	// Compute the coefficients of the second line
+	double a2, b2, c2;
+	calculateCoefficients(lineB[0], lineB[1], a2, b2, c2);
 
-// try{
-// 	calculateSlope(point1,point2);
-// } catch (const std::exception& e) {
-// 	ROS_WARN("%s", e.what());
+	if ( b1 == .0 && b2 == .0 )    throw std::runtime_error("[QrScanner]-findIntersection() : parallel lines as input. ");
+	if ( b1 != .0 && b2 != .0 )
+		if ( (-a1/b1) == (-a2/b2) )    throw std::runtime_error("[QrScanner]-findIntersection() : parallel lines as input. ");
+	
+	// // Calculate the intersection point
+	T cross_point;	
+	if ( b1 == .0 ) {      // In case first line is vertical
+		cross_point.x = lineA[0].x; 
+		cross_point.y = - c2 - a2*cross_point.x;
+	}
+	else if ( b2 == .0 ) {      // In case second line is vertical
+		cross_point.x = lineB[1].x; 
+		cross_point.y = - c1 - a1*cross_point.x;
+	}
+	else  {
+		cross_point.x = -(c1 - c2) / (a1 - a2);
+		cross_point.y = - c2 - a2*cross_point.x;
+	}
+
+	return cross_point;	
+}
+
+template<typename T, typename Tc>
+void QrScanner::calculateCoefficients(const T& pointA, const T& pointB, Tc &a, Tc &b, Tc &c)
+{	
+	if ( pointA.x - pointB.x == .0) {    // In case line is vertical (to avoid division by zero error)
+		a = 1.0;
+		b = .0;
+		c = -pointA.x;
+	} else {
+		a = -(pointA.y - pointB.y) / (pointA.x - pointB.x);		
+		b = 1.0;
+		c = - a*pointA.x - pointA.y;
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Line equation: y = ax + b  ////////////////////////////////////////////////////////////////////////////////
+// template<typename T>
+// T QrScanner::findIntersection(const vector<T>& lineA, const vector<T>& lineB)
+// {		
+// 	if ( lineA.size() != 2 && lineB.size() !=2 )    throw std::runtime_error("QrScanner::findIntersection() : wrong input vectors('lines') sizes. ");
+
+// 	// Compute the coefficients of the first line
+// 	if ( lineA[0].x-lineA[1].x == 0.0 )    throw std::runtime_error("QrScanner::findIntersection() : division by zero encountered. ");
+// 	// if ( lineA[0].x-lineA[1].x == 0.0 )     return std::numeric_limits<double>::max();    // To assign a calue approximately
+// 	double a1 = (lineA[0].y - lineA[1].y) / (lineA[0].x - lineA[1].x);
+// 	double b1 = lineA[1].y - a1*lineA[1].x;
+
+// 	// Compute the coefficients of the second line
+// 	if ( lineB[0].x-lineB[1].x == 0.0 )    throw std::runtime_error("QrScanner::findIntersection() : Division by zero on SECOND line. ");
+// 	// if ( lineB[0].x-lineB[1].x == 0.0 )     return std::numeric_limits<double>::max();    // To assign a calue approximately
+// 	double a2 = (lineB[0].y - lineB[1].y) / (lineB[0].x - lineB[1].x);
+// 	double b2 = lineB[1].y - a2*lineB[1].x;
+
+// 	if ( a1-a2 == 0 )    throw std::runtime_error("QrScanner::findIntersection() : parallel lines as input.. ");
+// 	// Find the point that the 2 lines intersect each other
+// 	T cross_point;		// To hold the intersection point
+// 	cross_point.x = (b2 - b1) / (a1 - a2);
+// 	cross_point.y = (a2*cross_point.x) + b2;
+
+// 	return cross_point;	
 // }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////
+// Line equation: ax + by + c = 0  ///////////////////////////////////////////////////////////////////////////
 
-//Find the projection (another Point) of a Point on the straight line formed by 2 other points 
+// template<typename T>
+// T QrScanner::findProjection(const T& point, const T& point_of_lineA, const T& point_of_lineB)
+// {	
+// 	// Equation of each line : a*x + b*y + c = 0
+// 	// Compute the coefficients of the first line
+// 	double a, b, c;
+// 	calculateCoefficients(point_of_lineA, point_of_lineB, a, b, c);
+// 	// Compute the coefficients of the second line
+
+// 	double a_p, b_p, c_p;
+// 	if ( a == 0.0 ) {
+// 		a_p = 1.0;
+// 		b_p = 0.0;
+// 	}
+// 	if ( b == 0.0 ) {
+// 		a_p = 0.0;
+// 		b_p = 1.0;
+// 	} else {
+// 		a_p = 1.0;
+// 		b_p = 1.0;	
+// 	}
+// 	c_p = - c/a;
+
+// 	// Calculate the projection
+// 	T projection_point;		
+// 	if ( b == 0 ) projection_point.x = point_of_lineA.x;    // In case input line is vertical
+// 	else if ( b_p == 0 ) projection_point.x = point.x;    // In case othogonal line is vertical
+// 	else projection_point.x = -(c - c_p) / (a - a_p);
+// 	projection_point.y = - c - a*projection_point.x;
+
+// 	return projection_point;	
+// }	
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Line equation: y = ax + b  ////////////////////////////////////////////////////////////////////////////////
+// template<typename T>
+// T QrScanner::findProjection(const T& point, const T& point_of_lineA, const T& point_of_lineB)
+// {	
+
+// 	if (point_of_lineA.x - point_of_lineB.x == 0) {
+// 		projection_point.y = point.y;
+// 		projection_point.x = point_of_lineA.x;
+
+// 	} else if ( point_of_lineA.y - point_of_lineB.y == 0) {
+// 		projection_point.x = point.x;
+// 		projection_point.y = point_of_lineA.y;		
+
+// 	} else {
+
+// 		// Line equation :  y = ax + b
+// 		double a, b;
+// 		a = calculateSlope(point_of_lineA, point_of_lineB);
+// 		b = point_of_lineA.y - a*point_of_lineA.x;
+
+// 		// Line orthogonal to previous line  equation : a_p*x + b_p*y + c_p = 0
+// 		double a_p, b_p;
+// 		a_p = -1.0/a;
+// 		b_p = point.y - a_p*point.x;
+
+// 		// Find their intersection
+// 		projection_point.x = -((b - b_p) / (a - a_p));
+// 		projection_point.y = a*projection_point.x + b;
+// 	}
+
+// 	return projection_point;
+// }	
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 template<typename T>
 T QrScanner::findProjection(const T& point, const T& point_of_lineA, const T& point_of_lineB)
 {	
 	T projection_point;		// To hold the projection of the 'point' on the straight line
-	// ax+by+c=0 , where b=1.0
-	float a,b,c;
-	// Find the coefficients of the line
-	a = -(point_of_lineA.y-point_of_lineB.y)/(point_of_lineA.x-point_of_lineB.x);		// a=-dy/dx
-	b = 1.0;
-	c = -a*point_of_lineA.x-point_of_lineA.y;		// c=-a*x-y
-	// Find the coefficients of the vertical line formed by 'point'
-	float a2,b2,c2;
-	a2 = -1/a;		// The 2 lines are vertical
-	b2 = 1.0;
-	c2 = -a2*point.x-point.y;
-	// Find the point that the 2 lines intersect each other
-	projection_point.x = -(c - c2)/(a-a2);
-	projection_point.y = -c-a*projection_point.x;
+
+	if (point_of_lineA.x - point_of_lineB.x == 0) {
+		projection_point.y = point.y;
+		projection_point.x = point_of_lineA.x;
+
+	} else if ( point_of_lineA.y - point_of_lineB.y == 0) {
+		projection_point.x = point.x;
+		projection_point.y = point_of_lineA.y;		
+
+	} else {
+
+		// Line equation :  y = ax + b
+		double a, b;
+		a = calculateSlope(point_of_lineA, point_of_lineB);
+		b = point_of_lineA.y - a*point_of_lineA.x;
+
+		// Line orthogonal to previous line  equation : a_p*x + b_p*y + c_p = 0
+		double a_p, b_p;
+		a_p = -1.0/a;
+		b_p = point.y - a_p*point.x;
+
+		// Find their intersection
+		projection_point.x = -((b - b_p) / (a - a_p));
+		projection_point.y = a*projection_point.x + b;
+	}
 
 	return projection_point;
 }	
-
-// Function used to find the midpoint between two points
-template<typename Ta, typename Tb>
-Ta QrScanner::findMid(const Ta& pointA, const Tb& pointB)
-{
-	Ta mid_point;	// To hold the midpoint
-	mid_point.x = (pointA.x+pointB.x)/2;
-	mid_point.y = (pointA.y+pointB.y)/2;
-	return mid_point;	
-}
-
-// template<typename T>
-// T findIntersection(const T& point1A, const T& point1B, const T& point2A, const T& point2B)
-// {
-// 	cv::Point2f crossPoint;		// To hold the intersection point
-// 	// First we compute the equation of the first line
-// 	float a1,b1,c1;		// The 3 coefficients of our line
-// 	if(Line1.size() == 2 )	{
-// 		// Find the coefficients of the equation
-// 		a1 = -(Line1[0].y-Line1[1].y)/(Line1[0].x-Line1[1].x);		// a=-dy/dx
-// 		b1 = 1.0;
-// 		c1 = -a1*Line1[0].x-Line1[0].y;		// c=-a*x-y
-// 	}	else 	ROS_ERROR("qr_identifier: Wrond input items for intersection point's calculation");
-// 	// Now we compute equation of the second line
-// 	float a2,b2,c2;		// The 3 coefficients of our line
-// 	if(Line2.size() == 2 )	{
-// 		// Find the coefficients of the line RIGHT
-// 		a2 = -(Line2[0].y-Line2[1].y)/(Line2[0].x-Line2[1].x);		// a=-dy/dx
-// 		b2 = 1.0;
-// 		c2 = -a2*Line2[0].x-Line2[0].y;		// c=-a*x-y
-// 	}	else 	ROS_ERROR("qr_identifier: Wrond input items for intersection point's calculation");
-// 	// Find the point that the 2 lines intersect each other
-// 	crossPoint.x = -(c1-c2)/(a1-a2);
-// 	crossPoint.y = -c1-a1*crossPoint.x;
-	
-// 	return crossPoint;	
-// }
-
-
-
-
-
-
-
 
 
 
@@ -786,16 +744,127 @@ void QrScanner::drawMassCenters(cv::Mat &inputimage, const vector<Point2D>& mass
 }
 
 // Draw on input image the contours that this QrIdentifier is examining
-// void QrScanner::drawVertices(cv::Mat &inputimage, const vector<vector<ContourPoint> >& contours )
-// {	
-// 	for( size_t i = 0; i < contours.size(); ++i )	{	// For each (of the 3) markers of our identifier
-// 		cv::circle(inputimage, contours[i][0], 2,  cv::Scalar(0,0,255), 2, 8, 0 );
-// 		cv::circle(inputimage, contours[i][1], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-// 		cv::circle(inputimage, contours[i][2], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-// 		cv::circle(inputimage, contours[i][3], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
-// 	}
-// }
+void QrScanner::drawVertices(cv::Mat &inputimage, const vector<Point2D>& vertices )
+{	
+	if ( vertices.size() != 4 )    throw std::runtime_error("[QrScanner]-drawVertices() : input's size is not 4. ");
 
+	cv::circle(inputimage, vertices[0], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
+	cv::circle(inputimage, vertices[1], 2,  cv::Scalar(0,0,255), 2, 8, 0 );
+	cv::circle(inputimage, vertices[2], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
+	cv::circle(inputimage, vertices[3], 2,  cv::Scalar(0,255,255), 5, 8, 0 );
+}
+// Draw on input image the contours that this QrIdentifier is examining
+void QrScanner::drawMarkerVertices(cv::Mat &inputimage, const vector<QrMarker>& markers )
+{	
+	if ( markers.size() != 3 )    throw std::runtime_error("[QrScanner]-drawVertices() : input's size is not 4. ");
+
+	cv::line(inputimage, markers[0].contour[0], markers[0].mass_center, cv::Scalar(255,140,140), 2);
+	cv::line(inputimage, markers[1].contour[0], markers[1].mass_center, cv::Scalar(255,140,140), 2);
+	cv::line(inputimage, markers[2].contour[0], markers[2].mass_center, cv::Scalar(255,140,140), 2);
+
+	for ( auto point : markers[0].contour) 
+		cv::circle(inputimage, point, 2,  cv::Scalar(0,0,255), 2, 8, 0 );
+
+	for ( auto point : markers[1].contour)
+		cv::circle(inputimage, point, 2,  cv::Scalar(0,0,255), 2, 8, 0 );
+
+	for ( auto point : markers[2].contour)
+		cv::circle(inputimage, point, 2,  cv::Scalar(0,0,255), 2, 8, 0 );
+
+	cv::circle(inputimage,  markers[0].contour[1], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
+	cv::circle(inputimage,  markers[1].contour[1], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
+	cv::circle(inputimage,  markers[2].contour[1], 2,  cv::Scalar(255,0,0), 2, 8, 0 );
+
+
+}
+
+void QrScanner::drawSquare(cv::Mat &inputimage, const vector<Point2D>& vertices, const vector<ContourPoint>& top_marker)
+{	
+	if ( vertices.size() != 4 )    throw std::runtime_error("[QrScanner]-drawVertices() : input's size is not 4. ");
+
+	cv::line(inputimage, vertices[0], vertices[1], cv::Scalar(125,255,125), 2);
+	cv::line(inputimage, vertices[1], vertices[2], cv::Scalar(125,255,125), 2);
+	cv::line(inputimage, vertices[2], vertices[3], cv::Scalar(125,255,125), 2);
+	cv::line(inputimage, vertices[3], vertices[0], cv::Scalar(125,255,125), 2);
+
+	// "Mark" top marker
+	// cv::line(inputimage, top_marker[0], top_marker[1], cv::Scalar(0,0,255), 5);
+	// cv::line(inputimage, top_marker[0], top_marker[3], cv::Scalar(0,0,255), 5);
+	cv::line(inputimage, top_marker[0], top_marker[1], cv::Scalar(125,125,255), 4);
+	cv::line(inputimage, top_marker[0], top_marker[3], cv::Scalar(125,125,255), 4);
+
+}
+void QrScanner::drawLines(cv::Mat &inputimage, const vector<QrMarker>& markers )
+{	
+	if ( markers.size() != 3 )    throw std::runtime_error("[QrScanner]-drawLines() : input's size is not 4. ");
+
+	cv::line(inputimage, markers[0].contour[0], markers[0].contour[1], cv::Scalar(0,255,255), 2);
+	cv::line(inputimage, markers[2].contour[0], markers[2].contour[3], cv::Scalar(0,255,255), 2);
+		
+}
+
+cv::Mat QrScanner::getDebuggingImage()
+{	
+	return _some_image;
+}
+
+bool QrScanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
+{	
+	if ( _detected_labels.size() == 0)    return false;
+
+	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+		cv::line(*inputimage, label[0], label[1], cv::Scalar(145,255,145), 2);
+		cv::line(*inputimage, label[1], label[2], cv::Scalar(145,255,145), 2);
+		cv::line(*inputimage, label[2], label[3], cv::Scalar(145,255,145), 2);
+		cv::line(*inputimage, label[3], label[0], cv::Scalar(145,255,145), 2);
+
+		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
+		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
+		cv::line(*inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[2])), cv::Scalar(125,125,255), 4);
+		cv::line(*inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[0])), cv::Scalar(125,125,255), 4);
+	});
+	return true;
+}
+
+bool QrScanner::drawDetectedLabels(cv::Mat &inputimage)
+{
+	if ( _detected_labels.size() == 0)    return false;
+
+	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+		cv::line(inputimage, label[0], label[1], cv::Scalar(145,255,145), 2);
+		cv::line(inputimage, label[1], label[2], cv::Scalar(145,255,145), 2);
+		cv::line(inputimage, label[2], label[3], cv::Scalar(145,255,145), 2);
+		cv::line(inputimage, label[3], label[0], cv::Scalar(145,255,145), 2);
+
+		// cv::line(inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
+		// cv::line(inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
+		cv::line(inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[2])), cv::Scalar(125,125,255), 4);
+		cv::line(inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[0])), cv::Scalar(125,125,255), 4);
+
+	});
+	return true;
+}
+
+cv::Mat QrScanner::getImageDetectedLabels(const cv::Mat &inputimage)
+{	
+	cv::Mat image_to_draw = inputimage.clone();
+	if ( _detected_labels.size() == 0 )    ROS_WARN("[QrScanner]-drawDetectedLabels(): there are no detected labels.");
+    else {
+		for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+			cv::line(image_to_draw, label[0], label[1], cv::Scalar(145,255,145), 2);
+			cv::line(image_to_draw, label[1], label[2], cv::Scalar(145,255,145), 2);
+			cv::line(image_to_draw, label[2], label[3], cv::Scalar(145,255,145), 2);
+			cv::line(image_to_draw, label[3], label[0], cv::Scalar(145,255,145), 2);
+
+			// cv::line(image_to_draw, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
+			// cv::line(image_to_draw, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
+			cv::line(image_to_draw, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[2])), cv::Scalar(125,125,255), 4);
+			cv::line(image_to_draw, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[0])), cv::Scalar(125,125,255), 4);
+
+		});
+	}
+	return image_to_draw;
+}
 
 
 

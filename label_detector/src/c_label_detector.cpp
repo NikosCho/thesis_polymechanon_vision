@@ -32,15 +32,32 @@ void LabelDetector::setSettings(DetectorSettings& settings)
 
 bool LabelDetector::detect()
 {
+	cv::namedWindow("Debugging-label_detector",1);
+	_labels_contours.clear();	
+
 
 	setupScanners();
 	if(!_scanners.empty())
 	for ( auto scanner:_scanners )
-	{
+	{	
+
 		scanner->setImageToScan(_input_image);
-		scanner->scan();
+		if ( scanner->scan() ) {
+			if (_settings.DEBUGGING )    scanner->drawDetectedLabels(_input_image);
+			std::vector<vector<Point2D> > detected_labels_contours = scanner->getDetectedLabels();
+
+
+			_labels_contours.insert(end(_labels_contours), begin(detected_labels_contours), end(detected_labels_contours));
+
+
+		}
+
+
+		cv::imshow("Debugging-label_detector", *_input_image);
+
 	}
 
+	std::cout << " [LabelDetector] - Total labels detected = " << _labels_contours.size() << std::endl;
 
 	return true;
 

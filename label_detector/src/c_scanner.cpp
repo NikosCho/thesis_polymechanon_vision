@@ -20,11 +20,41 @@ void Scanner::setImageToScan(const shared_ptr<cv::Mat> input_image)
 	_image_to_scan = input_image;
 }
 
+cv::Mat Scanner::getDebuggingImage()
+{
+	return *_image_to_scan;
+}
+
 bool Scanner::scan()
 {	
 
+	ROS_WARN("Scanner called");
 
 	return true;
+}
+
+bool Scanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
+{	
+	ROS_WARN("Scanner called");
+	return false;
+}
+
+bool Scanner::drawDetectedLabels(cv::Mat &inputimage)
+{
+	return false;
+}
+
+cv::Mat Scanner::getImageDetectedLabels(const cv::Mat &inputimage)
+{	
+	cv::Mat image_to_draw = inputimage.clone();
+	ROS_WARN("Scanner called");
+
+	return image_to_draw;
+}
+
+vector<vector<Point2D> > Scanner::getDetectedLabels()
+{	
+	return _detected_labels;
 }
 
 

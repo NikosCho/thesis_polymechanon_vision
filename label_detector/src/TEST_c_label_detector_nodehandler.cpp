@@ -1,53 +1,100 @@
-#include "label_detector/c_label_detector_nodehandler.h"
-
-////////////////////
-#include <label_detector/config_PP.h>  //PACKAGE_PATH 
-/////////////////////
+#include "label_detector/TEST_c_label_detector_nodehandler.h"
 
 namespace polymechanon_vision {
 
-LabelDetectorNodeHandler::LabelDetectorNodeHandler()
+TestLabelDetectorNodeHandler::TestLabelDetectorNodeHandler(std::string filepath, std::string type)
 {	
 	static const std::string topic_to_subscribe = loadTopic(_node);
-	image_transport::ImageTransport in_(_node);
-	_subscriber_to_img_node = in_.subscribe( topic_to_subscribe, 1, &LabelDetectorNodeHandler::imageCallback, this);
+	// image_transport::ImageTransport in_(_node);
 
 	loadDetectorSettings(_node);
-	_dyn_rec_server.setCallback(boost::bind(&LabelDetectorNodeHandler::dynRecCallback, this, _1, _2));
+	_dyn_rec_server.setCallback(boost::bind(&TestLabelDetectorNodeHandler::dynRecCallback, this, _1, _2));
+
+
+	if (type == "video" ) _image_video_switch = true;
+	else if (type == "picture" ) _image_video_switch = false;
+
+	_file_path = filepath;	
+	ROS_ERROR("%s",_file_path.c_str());
 }
 
-LabelDetectorNodeHandler::~LabelDetectorNodeHandler(){}
+TestLabelDetectorNodeHandler::~TestLabelDetectorNodeHandler(){}
 
-void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& img_sub_msg)
+void TestLabelDetectorNodeHandler::start()
 {	
-	cv::Mat camera_input;
+	if ( _image_video_switch ) {
 
-	try  {
-		cv_bridge::CvImageConstPtr cv_ptr;
-		cv_ptr = cv_bridge::toCvShare(img_sub_msg,"bgr8");
-		camera_input = cv_ptr->image;
-		cvWaitKey(30);
+		// std::cout << _file_path << std::endl;
+		
+		// std::cout << _file_path << std::endl;
+
+		// cv::namedWindow("VIDEO",CV_WINDOW_AUTOSIZE);
+
+		cv::Mat frame;
+		cv::VideoCapture capture;
+		capture.open( _file_path );
+
+		double fps = capture.get(CV_CAP_PROP_FPS); //get the frames per seconds of the video
+		capture.set(CV_CAP_PROP_POS_MSEC, 300); //start the video at 300ms
+
+		int video_frames = capture.get(CV_CAP_PROP_FRAME_COUNT);
+		// std::cout << video_frames << std::endl;
+		ROS_ERROR("------------------------------------------------");
+		ROS_ERROR("%d",video_frames);
+
+
+		static int frame_counter = 1;
+
+		bool bSuccess = false;
+
+		// while( frame_counter < video_frames )
+		// {
+		while(1) {
+			// capture >> frame;
+
+			bSuccess = capture.read(frame); // read a new frame from video
+			if ( bSuccess ) {
+				frame_counter++;
+
+				// imshow("VIDEO", frame);
+				_detector.setInputImage(frame);
+				_detector.detect();	
+
+
+				if(cv::waitKey(70) == 27) {
+					frame_counter = video_frames;
+					break;
+				}
+				 // std::cout << "esc key is pressed by user" << std::endl; 
+			} else {
+				capture.release();
+				break;
+
+			}
+		} 
+
+
+		
 	}
-	catch (cv_bridge::Exception& e)  {
-		ROS_ERROR("LabelDetectorNodeHandler::imageCallback() : Could not convert (image message) from '%s' to 'bgr8'.", img_sub_msg->encoding.c_str());
+	else {
+		// cv::namedWindow("IMAGE",1);
+		cv::Mat image_to_test;
+		image_to_test = cv::imread(_file_path);
+
+		// imshow("IMAGE", image_to_test);
+		_detector.setInputImage(image_to_test);
+		_detector.detect();
+		cv::waitKey();
 	}
 
 
-
-	/////////////////////////////////////////////////////
-	_detector.setInputImage(camera_input);
-	_detector.detect();
-	/////////////////////////////////////////////////////
-
-
-
-
+	cv::destroyAllWindows();
 
 }
 
 // Load image input topic's name from parameter server.
 // If there is no topic's name on server, take the function's paramteter.
-std::string LabelDetectorNodeHandler::loadTopic(const ros::NodeHandle& node, std::string topic_name /* = "camera/image_raw" */ ) 
+std::string TestLabelDetectorNodeHandler::loadTopic(const ros::NodeHandle& node, std::string topic_name /* = "camera/image_raw" */ ) 
 {	
 	std::string topic_param_name("label_detector/input_image_topic");
 
@@ -64,7 +111,7 @@ std::string LabelDetectorNodeHandler::loadTopic(const ros::NodeHandle& node, std
 
 // Load parameters and settings from parameter server or set them to default.
 // If settings aren't on parameter server, set them.
-void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
+void TestLabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
 {	
 	DetectorSettings settings;
 	// DetectorSettings default values: 
@@ -87,7 +134,7 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
 }
 
 // Dynamic reconfigure using command line reconfiguration or rqt-plugin
-void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level)
+void TestLabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level)
 {	
 	DetectorSettings settings;
     ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[HZL DETECTION]-%s \n\t[QR-WIDTH] x (mm) ",

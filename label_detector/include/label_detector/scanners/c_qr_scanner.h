@@ -14,8 +14,12 @@
 
 #include "ros/ros.h"
 
+#include <math.h>
+#define _USE_MATH_DEFINES
+
 using std::vector;
 using std::pair; //?
+using std::make_pair; //?
 using std::shared_ptr;
 using std::all_of;
 using std::for_each;
@@ -28,6 +32,7 @@ using std::endl;
 //////////
 
 typedef cv::Point ContourPoint;
+// typedef cv::Point2f Point2D;
 typedef cv::Point2f Point2D;
 
 namespace polymechanon_vision {
@@ -56,13 +61,23 @@ public:
 	virtual ~QrScanner();
 
 	LabelType getType() const;
-	/* void setImageToScan(const shared_ptr<cv::Mat> input_image); */
+	cv::Mat getDebuggingImage();
+	void setImageToScan(const shared_ptr<cv::Mat> input_image); 
 	bool scan();
+
+	vector<vector<Point2D> > getDetectedLabels();
+
+	// Debugging
+	bool drawDetectedLabels(shared_ptr<cv::Mat> inputimage);
+	bool drawDetectedLabels(cv::Mat &inputimage);
+	cv::Mat getImageDetectedLabels(const cv::Mat &inputimage);
 
 
 private:
 	static const LabelType _type = LabelType::QRCODE;
 	/* shared_ptr<cv::Mat> _image_to_scan */
+	vector<vector<Point2D> > _detected_labels;
+
 
 	// Scanning functions
 	vector<vector<ContourPoint> > findAlignmentMarkers(const cv::Mat& image);
@@ -72,28 +87,40 @@ private:
 	vector<vector<ContourPoint> > getContours(const vector<int>& contours_by_id, const vector<vector<ContourPoint> >& contours);
 	vector<QrMarker> getMarkers(const vector<int>& contours_by_id, const vector<vector<ContourPoint> >& contours, const vector<Point2D>& mass_centers);
 	void sortMarkers(vector<QrMarker>& markers);
-	vector<Point2D> findVertices(vector<QrMarker>& markers);
+	void sortMarkersVertices(vector<QrMarker>& markers);
+	vector<Point2D> findSquare(const vector<QrMarker>& markers);
 
 	template<typename Ta, typename Tb>
 	double calculateDistance(const Ta& point1, const Tb& point2);
+	template<typename Ta, typename Tb>
+	Ta findMiddlePoint(const Ta& pointA, const Tb& pointB);
 	template<typename T>
 	double calculateSlope(const T& pointA, const T& pointB);
 	template<typename T>
+	double calculateAngle(const T& pointA, const T& pointB, const T& pointC);
+	template<typename T>
+	T findIntersection(const vector<T>& lineA, const vector<T>& lineB);
+	template<typename T, typename Tc>
+	void calculateCoefficients(const T& pointA, const T& pointB, Tc &a, Tc &b, Tc &c);
+	template<typename T>
 	T findProjection(const T& point, const T& point_of_lineA, const T& point_of_lineB);
-	template<typename Ta, typename Tb>
-	Ta findMid(const Ta& pointA, const Tb& pointB);
-	// template<typename T>
-	// T findIntersection(const T& point1A, const T& point1B, const T& point2A, const T& point2B);
+
+
 
 
 
 
 
 	// TEST ////////////
+
+	cv::Mat _some_image;
 	cv::Scalar randomColor();
 	void drawContours(cv::Mat &inputimage, const vector<vector<ContourPoint> >& contours );
 	void drawMassCenters(cv::Mat &inputimage, const vector<Point2D>& mass_centers );
-	// void drawVertices(cv::Mat &inputimage, const vector<vector<ContourPoint> >& contours );
+	void drawMarkerVertices(cv::Mat &inputimage, const vector<QrMarker>& markers );
+	void drawVertices(cv::Mat &inputimage, const vector<Point2D>& vertices );
+	void drawLines(cv::Mat &inputimage, const vector<QrMarker>& markers );
+	void drawSquare(cv::Mat &inputimage, const vector<Point2D>& vertices, const vector<ContourPoint>& top_marker);
 	///////////////////
 };
 

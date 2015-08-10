@@ -1,5 +1,5 @@
-#ifndef LABEL_DETECTOR_NODEHANDLER_H
-#define LABEL_DETECTOR_NODEHANDLER_H
+#ifndef TEST_LABEL_DETECTOR_NODEHANDLER_H
+#define TEST_LABEL_DETECTOR_NODEHANDLER_H
 
 #include <iostream>
 #include <string>
@@ -17,24 +17,33 @@
 
 namespace polymechanon_vision {
 
-class LabelDetectorNodeHandler
+class TestLabelDetectorNodeHandler
 {	
 public:
-	LabelDetectorNodeHandler();
-	~LabelDetectorNodeHandler();
+	// TestLabelDetectorNodeHandler();
+	TestLabelDetectorNodeHandler(std::string filepath, std::string type);
+	~TestLabelDetectorNodeHandler();
+	void start();
 
 private:
+	cv::Mat _camera_input;
+	std::string _file_path;
+	bool _image_video_switch;
+
+
 	ros::NodeHandle _node;
-	image_transport::Subscriber _subscriber_to_img_node;
+	// image_transport::Subscriber _subscriber_to_img_node;
 	dynamic_reconfigure::Server<label_detector::LabelDetectorConfig> _dyn_rec_server;
 
 	LabelDetector _detector;
 	
-	void imageCallback(const sensor_msgs::ImageConstPtr& msg);
+	// void imageCallback(const sensor_msgs::ImageConstPtr& msg);
 	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "camera/image_raw");	
 	void loadDetectorSettings(const ros::NodeHandle& node);
 	void dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level);
+
+
 };
 
 } // "namespace polymechanon_vision"
-#endif // LABEL_DETECTOR_NODEHANDLER_H
+#endif // TEST_LABEL_DETECTOR_NODEHANDLER_H

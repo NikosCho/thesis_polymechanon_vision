@@ -21,6 +21,10 @@ using std::make_shared;
 using std::none_of;
 using std::remove_if;
 
+typedef cv::Point2f Point2D;
+
+
+
 namespace polymechanon_vision {
 
 struct DetectorSettings
@@ -51,7 +55,9 @@ private:
 	shared_ptr<cv::Mat> _input_image;
 	DetectorSettings _settings;
 	std::vector<polymechanon_vision::Label> _labels;
+	std::vector<vector<Point2D> > _labels_contours;
 	std::vector<Scanner*> _scanners;
+
 
 	void setupScanners();
 	bool checkScannerbyType(const LabelType& label);
