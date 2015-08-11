@@ -78,7 +78,6 @@ add_dependencies(label_detector_node polymechanon_vision_msgs_gencpp)
 ## Testing ##
 #############
 
-#   $catkin_make run_tests_label_detector
 
 file(GLOB_RECURSE TESTS ${PROJECT_SOURCE_DIR}/test/*.cpp)
 
@@ -88,10 +87,11 @@ foreach(ITEM ${TESTS})
                                           src/c_label.cpp
                                           src/c_scanner.cpp
                                           src/scanners/c_qr_scanner.cpp)
-    target_link_libraries(${filename} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+    target_link_libraries(${filename} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Zbar_INCLUDE_DIR})
 endforeach()
 
 
+# catkin_make run_tests_label_detector
 
 # git fetch --all
 # git reset --hard origin/master
