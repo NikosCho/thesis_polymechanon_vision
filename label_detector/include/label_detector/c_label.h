@@ -27,11 +27,14 @@ public:
 	void setLabel(std::string& label);
 	std::string getLabel() const;
 
+	static int getLabelsCounter();
+
 private:
+	static int _labels_counter;
+
 	int _id;
 	LabelType _type;
 	std::string _label;
-
 };
 
 } // "namespace polymechanon_vision"

@@ -1,6 +1,7 @@
 #ifndef QR_SCANNER_H
 #define QR_SCANNER_H
 
+#include "ros/ros.h"
 #include <iostream>
 #include <string>
 #include <memory>
@@ -8,14 +9,16 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <zbar.h> //for zbar
+
+/// Angle calculation //
+#include <math.h>
+#define _USE_MATH_DEFINES
+/////////////////////////
+
 // Other class dependecies
 #include "label_detector/c_scanner.h"
 #include "label_detector/c_label.h"
-
-#include "ros/ros.h"
-
-#include <math.h>
-#define _USE_MATH_DEFINES
 
 using std::vector;
 using std::pair; //?
@@ -26,14 +29,14 @@ using std::for_each;
 using std::distance;
 using std::rotate;
 using std::max_element;
-////////////////
+
+
 using std::cout;
 using std::endl;
-//////////
 
 typedef cv::Point ContourPoint;
 // typedef cv::Point2f Point2D;
-typedef cv::Point2f Point2D;
+// typedef cv::Point2f Point2D;
 
 namespace polymechanon_vision {
 
@@ -57,26 +60,31 @@ class QrScanner : public Scanner
 {	
 
 public:
-	QrScanner();
+	QrScanner(shared_ptr<cv::Mat> input_image = nullptr);
 	virtual ~QrScanner();
 
 	LabelType getType() const;
-	cv::Mat getDebuggingImage();
-	void setImageToScan(const shared_ptr<cv::Mat> input_image); 
+	/* void setImageToScan(const shared_ptr<cv::Mat> input_image); */
 	bool scan();
-
 	vector<vector<Point2D> > getDetectedLabels();
 
-	// Debugging
+
+
+
+
+
+	///////////////////// Debugging Functions /////////////////////
 	bool drawDetectedLabels(shared_ptr<cv::Mat> inputimage);
 	bool drawDetectedLabels(cv::Mat &inputimage);
-	cv::Mat getImageDetectedLabels(const cv::Mat &inputimage);
+	cv::Mat getImageOfDetectedLabels(const cv::Mat &inputimage);
 
 
 private:
+	/* shared_ptr<cv::Mat> _image_to_scan */ 
 	static const LabelType _type = LabelType::QRCODE;
-	/* shared_ptr<cv::Mat> _image_to_scan */
 	vector<vector<Point2D> > _detected_labels;
+
+	zbar::ImageScanner scanner_;
 
 
 	// Scanning functions
@@ -89,6 +97,7 @@ private:
 	void sortMarkers(vector<QrMarker>& markers);
 	void sortMarkersVertices(vector<QrMarker>& markers);
 	vector<Point2D> findSquare(const vector<QrMarker>& markers);
+	std::string translate(const cv::Mat &gray_input_image,const vector<Point2D>& qr_vertices);
 
 	template<typename Ta, typename Tb>
 	double calculateDistance(const Ta& point1, const Tb& point2);
@@ -106,14 +115,8 @@ private:
 	T findProjection(const T& point, const T& point_of_lineA, const T& point_of_lineB);
 
 
-
-
-
-
-
 	// TEST ////////////
 
-	cv::Mat _some_image;
 	cv::Scalar randomColor();
 	void drawContours(cv::Mat &inputimage, const vector<vector<ContourPoint> >& contours );
 	void drawMassCenters(cv::Mat &inputimage, const vector<Point2D>& mass_centers );

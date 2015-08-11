@@ -13,16 +13,8 @@ LabelDetector::LabelDetector(cv::Mat input_image)
 	setInputImage(input_image);
 }
 
-LabelDetector::~LabelDetector(){ ROS_ERROR("LabelDetector deleted!"); }
-
-void LabelDetector::setInputImage(cv::Mat input_image)
-{	
-	try  {
-		_input_image = make_shared<cv::Mat>(input_image);
-	}
-	catch ( std::bad_alloc& e)  {
-		ROS_ERROR("LabelDetector::setCameraInput(): bad_alloc exception while setting camera input.");
-	}
+LabelDetector::~LabelDetector(){ 
+	ROS_ERROR("LabelDetector deleted!"); 
 }
 
 void LabelDetector::setSettings(DetectorSettings& settings)
@@ -30,11 +22,34 @@ void LabelDetector::setSettings(DetectorSettings& settings)
 	_settings = settings;
 }
 
-bool LabelDetector::detect()
-{
-	cv::namedWindow("Debugging-label_detector",1);
-	_labels_contours.clear();	
+bool LabelDetector::setInputImage(cv::Mat input_image)
+{	
+	if ( input_image.empty() ) {
+	 	ROS_WARN("[LabelDetector]-setInputImage() : input image is empty.");
+	 	return false;
+	}
 
+	try  {
+		_input_image = make_shared<cv::Mat>(input_image);
+	}
+	catch ( std::bad_alloc& e)  {
+		ROS_ERROR("[LabelDetector]-setInputImage(): bad_alloc exception while setting camera input.");
+	 	return false;
+	}
+
+	return true;
+}
+
+bool LabelDetector::detect()
+{	
+	if (_input_image == nullptr ) throw std::runtime_error("[LabelDetector]-scan() : image's pointer is nullptr (use 'setInputImage()').");
+
+	static const std::string debugging_window = "[LabelDetector]-Debugging";
+	if ( _settings.DEBUGGING ) {
+		cv::namedWindow(debugging_window, cv::WINDOW_AUTOSIZE);  // WINDOW_NORMAL,  WINDOW_AUTOSIZE,  WINDOW_OPENGL
+	}
+
+	_labels_contours.clear();	
 
 	setupScanners();
 	if(!_scanners.empty())
@@ -53,15 +68,26 @@ bool LabelDetector::detect()
 		}
 
 
-		cv::imshow("Debugging-label_detector", *_input_image);
 
 	}
 
-	std::cout << " [LabelDetector] - Total labels detected = " << _labels_contours.size() << std::endl;
+
+	if ( _settings.DEBUGGING ) {
+		drawInfo();
+		cv::imshow(debugging_window, *_input_image);  // WINDOW_AUTOSIZE, WINDOW_OPENGL
+	} else {
+		cv::destroyAllWindows();
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	// DRAW XYZ - - - http://docs.opencv.org/master/d7/d53/tutorial_py_pose.html#gsc.tab=0
+	////////////////////////////////////////////////////////////////////////////////////////
+	if ( _labels_contours.size() <1 )    return false;
 
 	return true;
-
 }
+
+
 
 // Setup scanners according to detector's settings.
 // For each scanner's type, create one, if its type is enabled.
@@ -75,9 +101,11 @@ void LabelDetector::setupScanners()
 	} else if ( !_settings.QR_ENABLED ) {
 		removeScannerbyType(LabelType::QRCODE);
 	}
-	///////////////////////////////////////////////
-	//  Any other scanner must be placed here!!  //
-	///////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////
+	//                  Any other scanner must be placed here!!                  //
+	///////////////////////////////////////////////////////////////////////////////
+
+
 }
 
 // Check if there is a scanner of this label's type
@@ -115,6 +143,42 @@ void LabelDetector::removeScannerbyType(const LabelType& label)
 	//    }
 	// }
 }
+
+
+////////// Debugging //////////
+
+void LabelDetector::drawInfo()
+{	
+	if (_input_image != nullptr ) {
+		std::ostringstream text;
+		text << "Labels detected: " << _labels_contours.size();	
+		// cv::putText(*_input_image, "geia", cv::Point(0, (*_input_image).rows), cv::FONT_HERSHEY_PLAIN, 5, cv::Scalar(0,0,255), 2);
+		cv::rectangle(*_input_image, cv::Point(0, (*_input_image).rows), cv::Point((*_input_image).cols, (*_input_image).rows-25), cv::Scalar(50,50,50), CV_FILLED );
+		// cv::rectangle(*_input_image, cv::Point(0, (*_input_image).rows), cv::Point((*_input_image).cols, (*_input_image).rows-25), cv::Scalar(0,0,0), CV_FILLED );
+		cv::line(*_input_image, cv::Point(0, (*_input_image).rows-27), cv::Point((*_input_image).cols, (*_input_image).rows-27), cv::Scalar(0,0,0), 3 );
+
+		// cv::putText(*_input_image, text.str(), cv::Point(0, (*_input_image).rows-5), cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0,255,0), 4);
+		cv::putText(*_input_image, text.str(), cv::Point(0, (*_input_image).rows-7), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255,255,255), 1);
+	
+
+	}
+}
+
+////////// Test //////////
+
+cv::Mat LabelDetector::getImageOutput()
+{
+	cv::Mat image_output = (*_input_image).clone();
+	return image_output;
+}
+
+int LabelDetector::getNumberOfDetectedLabels()
+{
+	return _labels_contours.size();
+}
+
+
+
 
 
 } // "namespace polymechanon_vision"

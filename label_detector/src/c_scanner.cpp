@@ -4,11 +4,13 @@ namespace polymechanon_vision {
 
 Scanner::Scanner(shared_ptr<cv::Mat> input_image /* = nullptr */)
 {	
-	setImageToScan(input_image);
+	if ( input_image != nullptr)    setImageToScan(input_image);
 	ROS_WARN("Scanner created!");
 }
 
-Scanner::~Scanner(){ ROS_ERROR("Scanner deleted!"); }
+Scanner::~Scanner(){ 
+	ROS_ERROR("Scanner deleted!"); 
+}
 
 LabelType Scanner::getType() const
 {
@@ -17,22 +19,23 @@ LabelType Scanner::getType() const
 
 void Scanner::setImageToScan(const shared_ptr<cv::Mat> input_image)
 {	
+	if ( input_image == nullptr )  throw std::runtime_error("[Scanner]-setImageToScan() : image's pointer is nullptr. ");
 	_image_to_scan = input_image;
-}
-
-cv::Mat Scanner::getDebuggingImage()
-{
-	return *_image_to_scan;
 }
 
 bool Scanner::scan()
 {	
-
+	if (_image_to_scan == nullptr ) throw std::runtime_error("[Scanner]-scan() : image's pointer is nullptr (use 'setImageToScan()'). ");	
 	ROS_WARN("Scanner called");
-
-	return true;
+	return false;
 }
 
+vector<vector<Point2D> > Scanner::getDetectedLabels()
+{	
+	return _detected_labels;
+}
+
+//////////////////////////////// Debugging Functions ////////////////////////////////
 bool Scanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
 {	
 	ROS_WARN("Scanner called");
@@ -44,7 +47,7 @@ bool Scanner::drawDetectedLabels(cv::Mat &inputimage)
 	return false;
 }
 
-cv::Mat Scanner::getImageDetectedLabels(const cv::Mat &inputimage)
+cv::Mat Scanner::getImageOfDetectedLabels(const cv::Mat &inputimage)
 {	
 	cv::Mat image_to_draw = inputimage.clone();
 	ROS_WARN("Scanner called");
@@ -52,10 +55,7 @@ cv::Mat Scanner::getImageDetectedLabels(const cv::Mat &inputimage)
 	return image_to_draw;
 }
 
-vector<vector<Point2D> > Scanner::getDetectedLabels()
-{	
-	return _detected_labels;
-}
+
 
 
 

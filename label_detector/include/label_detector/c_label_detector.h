@@ -6,6 +6,7 @@
 #include <memory>
 #include <algorithm>
 #include <iterator>
+#include <numeric>
 
 #include "ros/ros.h"
 #include <opencv2/opencv.hpp>
@@ -34,7 +35,7 @@ struct DetectorSettings
 	bool HZL_ENABLED;
 	int QRSIDE_LENGTH;		// milimeters
 
-	DetectorSettings(): DEBUGGING(false), QR_ENABLED(true), HZL_ENABLED(true), QRSIDE_LENGTH(182){}
+	DetectorSettings(): DEBUGGING(true), QR_ENABLED(true), HZL_ENABLED(true), QRSIDE_LENGTH(182){}
 };
 
 class LabelDetector
@@ -44,13 +45,14 @@ public:
 	LabelDetector(cv::Mat input_image);
 	~LabelDetector();
 
-	void setInputImage(cv::Mat input_image);
 	void setSettings(DetectorSettings& settings);
-
-
+	bool setInputImage(cv::Mat input_image);
 	bool detect();
-	
 
+	////////// Test //////////
+	cv::Mat getImageOutput();
+	int getNumberOfDetectedLabels();
+	
 private:
 	shared_ptr<cv::Mat> _input_image;
 	DetectorSettings _settings;
@@ -58,18 +60,16 @@ private:
 	std::vector<vector<Point2D> > _labels_contours;
 	std::vector<Scanner*> _scanners;
 
-
+	// Scanners setup
 	void setupScanners();
 	bool checkScannerbyType(const LabelType& label);
 	void removeScannerbyType(const LabelType& label);
 
+	////////// Debugging //////////
+	void drawInfo();
+
+
 };
-
-
-
-
-
-
 
 } // "namespace polymechanon_vision"
 #endif // LABEL_DETECTOR_H

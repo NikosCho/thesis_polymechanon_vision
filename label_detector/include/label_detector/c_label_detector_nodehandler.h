@@ -34,6 +34,9 @@ private:
 	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "camera/image_raw");	
 	void loadDetectorSettings(const ros::NodeHandle& node);
 	void dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level);
+
+
+
 };
 
 } // "namespace polymechanon_vision"

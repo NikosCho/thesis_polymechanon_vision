@@ -38,35 +38,141 @@
 
 #include "ros/ros.h"
 #include <gtest/gtest.h>
+#include <vector>
 #include "label_detector/c_label.h"
 #include "label_detector/c_label_detector.h"
 #include <label_detector/config_PP.h>  //PACKAGE_PATH 
 
-static cv::String appendPackagePath(const std::string filepath)
-	{
-	  std::string return_path(PACKAGE_PATH);
-	  return_path.append(filepath);
-	  return return_path;
-	}
+// $ rostest label_detector run_label_detector_node.launch 
 
-TEST(Label, setID) {
-	polymechanonvision::Label label;
-	EXPECT_EQ(1,label.setID());
+// $ catkin_make run_tests_label_detector
+
+
+static cv::String getFilePath(const std::string& file, int type = 0) // 0-picture 1-video
+{
+	std::string return_path(PACKAGE_PATH);
+	return_path.append("/test/samples/");
+
+	if ( type == 0)    return_path.append("pictures/tests/");
+	else if ( type == 1)    return_path.append("videos/tests/");
+	return_path.append(file);
+	return return_path;
 }
+
+static cv::String getTestResultsPath(const std::string& file, int type = 0) // 0-picture 1-video
+{
+	std::string return_path(PACKAGE_PATH);
+	return_path.append("/test/samples/");
+	if ( type == 0)    return_path.append("pictures/results/");
+	else if ( type == 1)    return_path.append("videos/results/");
+	return_path.append("RESULT_OF_");
+	return_path.append(file);
+	return return_path;
+}
+
+// TEST(Label, setID) {
+// 	polymechanon_vision::Label label;
+// 	EXPECT_EQ(1,label.setID());
+// }
+
+// TEST(LabelDetector, detect1) {
+
+// 	std::string file_name = "test1.jpg";
+// 	std::string file_path  = getFilePath(file_name);
+
+// 	cv::Mat image_to_test;
+// 	image_to_test = cv::imread(file_path);
+
+// 	polymechanon_vision::LabelDetector detector(image_to_test);
+
+// 	EXPECT_EQ(true,detector.detect());
+// 	EXPECT_EQ(1,detector.getNumberOfDetectedLabels());
+
+// 	cv::Mat test_result = detector.getImageOutput();
+// 	cv::imwrite(getTestResultsPath(file_name), test_result);
+// }
+
+// TEST(LabelDetector, detect2) {
+
+// 	std::string file_name = "test2.jpg";
+// 	std::string file_path  = getFilePath(file_name);
+
+// 	cv::Mat image_to_test;
+// 	image_to_test = cv::imread(file_path);
+
+// 	polymechanon_vision::LabelDetector detector(image_to_test);
+
+// 	EXPECT_EQ(true,detector.detect());
+// 	EXPECT_EQ(1,detector.getNumberOfDetectedLabels());
+
+// 	cv::Mat test_result = detector.getImageOutput();
+// 	cv::imwrite(getTestResultsPath(file_name), test_result);
+// }
+
+// TEST(LabelDetector, detect3) {
+
+// 	std::string file_name = "test3.jpg";
+// 	std::string file_path  = getFilePath(file_name);
+
+// 	cv::Mat image_to_test;
+// 	image_to_test = cv::imread(file_path);
+
+// 	polymechanon_vision::LabelDetector detector(image_to_test);
+
+// 	EXPECT_EQ(true,detector.detect());
+// 	EXPECT_EQ(1,detector.getNumberOfDetectedLabels());
+
+// 	cv::Mat test_result = detector.getImageOutput();
+// 	cv::imwrite(getTestResultsPath(file_name), test_result);
+// }
+
+// TEST(LabelDetector, detect4) {
+
+// 	std::string file_name = "test4.jpg";
+// 	std::string file_path  = getFilePath(file_name);
+
+// 	cv::Mat image_to_test;
+// 	image_to_test = cv::imread(file_path);
+
+// 	polymechanon_vision::LabelDetector detector(image_to_test);
+
+// 	EXPECT_EQ(true,detector.detect());
+// 	EXPECT_EQ(1,detector.getNumberOfDetectedLabels());
+
+// 	cv::Mat test_result = detector.getImageOutput();
+// 	cv::imwrite(getTestResultsPath(file_name), test_result);
+// }
+
 
 TEST(LabelDetector, detect) {
 
+	std::vector<std::string> file_names = 
+	{
+		"test1.jpg",
+		"test2.jpg",
+		"test3.jpg",
+		"test4.jpg"
+		// "test5.jpg",
+		// "test6.jpg",
+		// "test7.jpg",
+		// "test8.jpg"
+	};
 
-	std::string image_file_path(PACKAGE_PATH);
-	std::string rest_path("/test/samples/random_pic.png");
-	image_file_path.append(rest_path);
+	for ( size_t i=0; i < file_names.size(); i++) {
 
-	cv::Mat image_to_test;
-	image_to_test = cv::imread(image_file_path);
+		std::string file_path  = getFilePath(file_names[i]);
 
-	polymechanonvision::LabelDetector detector(image_to_test);
+		cv::Mat image_to_test;
+		image_to_test = cv::imread(file_path);
 
-	EXPECT_EQ(true,detector.detect());
+		polymechanon_vision::LabelDetector detector(image_to_test);
+
+		EXPECT_EQ(true,detector.detect());
+		EXPECT_EQ(1,detector.getNumberOfDetectedLabels());
+
+		cv::Mat test_result = detector.getImageOutput();
+		cv::imwrite(getTestResultsPath(file_names[i]), test_result);
+	}
 }
 
 int main(int argc, char **argv) {

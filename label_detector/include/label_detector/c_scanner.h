@@ -8,6 +8,7 @@
 #include <opencv2/opencv.hpp>
 
 // Other class dependecies
+#include "label_detector/c_scanner.h"
 #include "label_detector/c_label.h"
 
 #include "ros/ros.h"
@@ -30,12 +31,12 @@ public:
 	virtual LabelType getType() const;
 	void setImageToScan(const shared_ptr<cv::Mat> input_image);
 	virtual bool scan();
-	virtual cv::Mat getDebuggingImage();
+	virtual vector<vector<Point2D> > getDetectedLabels();	
 
+	///////////////////// Debugging Functions /////////////////////
 	virtual bool drawDetectedLabels(shared_ptr<cv::Mat> inputimage);
 	virtual bool drawDetectedLabels(cv::Mat &inputimage);
-	virtual cv::Mat getImageDetectedLabels(const cv::Mat &inputimage);
-	virtual vector<vector<Point2D> > getDetectedLabels();
+	virtual cv::Mat getImageOfDetectedLabels(const cv::Mat &inputimage);
 	
 protected:
 	shared_ptr<cv::Mat> _image_to_scan;

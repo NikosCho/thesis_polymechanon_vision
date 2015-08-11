@@ -4,6 +4,8 @@ project(label_detector)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -17,7 +19,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 find_package(Zbar REQUIRED)
-find_package(OpenCV REQUIRED)
 
 set(PACKAGE_PATH "${PROJECT_SOURCE_DIR}")
 configure_file(${PROJECT_SOURCE_DIR}/config/config_PP.h.in ${PROJECT_SOURCE_DIR}/include/label_detector/config_PP.h)
@@ -60,8 +61,10 @@ add_executable(label_detector_node
     src/c_label_detector_nodehandler.cpp
     src/c_label_detector.cpp
     src/c_label.cpp
+    #scanners
     src/c_scanner.cpp
     src/scanners/c_qr_scanner.cpp
+    src/scanners/c_hzl_scanner.cpp
     )
 
 target_link_libraries( label_detector_node ${catkin_LIBRARIES})
@@ -81,8 +84,10 @@ file(GLOB_RECURSE TESTS ${PROJECT_SOURCE_DIR}/test/*.cpp)
 
 foreach(ITEM ${TESTS})
     get_filename_component(filename ${ITEM} NAME_WE)
-    catkin_add_gtest(${filename} ${ITEM} src/c_label.cpp
-                                         src/c_label_detector.cpp)
+    catkin_add_gtest(${filename} ${ITEM}  src/c_label_detector.cpp
+                                          src/c_label.cpp
+                                          src/c_scanner.cpp
+                                          src/scanners/c_qr_scanner.cpp)
     target_link_libraries(${filename} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 endforeach()
 
