@@ -1,3 +1,4 @@
+
 #ifndef LABEL_H
 #define LABEL_H
 
@@ -12,9 +13,11 @@ enum class LabelType
 	HZL 
 };
 
+
 class Label
 {
 public:
+
 	Label();
 	~Label();
 
@@ -33,7 +36,9 @@ private:
 	static int _labels_counter;
 
 	int _id;
+
 	LabelType _type;
+
 	std::string _label;
 };
 

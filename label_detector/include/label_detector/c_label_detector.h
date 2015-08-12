@@ -33,9 +33,17 @@ struct DetectorSettings
 	bool DEBUGGING;
 	bool QR_ENABLED;
 	bool HZL_ENABLED;
+	int QR_CANNY_PAR1;
+	int QR_CANNY_PAR2;
+
 	int QRSIDE_LENGTH;		// milimeters
 
-	DetectorSettings(): DEBUGGING(true), QR_ENABLED(true), HZL_ENABLED(true), QRSIDE_LENGTH(182){}
+	DetectorSettings(): DEBUGGING(true), 
+						QR_ENABLED(true), 
+						HZL_ENABLED(true), 
+						QR_CANNY_PAR1(100), 
+						QR_CANNY_PAR2(200), 
+						QRSIDE_LENGTH(182){}
 };
 
 class LabelDetector

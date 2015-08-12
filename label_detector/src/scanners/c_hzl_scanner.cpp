@@ -4,6 +4,7 @@ namespace polymechanon_vision {
 
 HzlScanner::HzlScanner(shared_ptr<cv::Mat> input_image /* = nullptr */)
 {	
+	// if ( input_image != nullptr)    setImageToScan(input_image);
 	if ( input_image != nullptr)    Scanner::setImageToScan(input_image);
 	ROS_WARN("Hzl-Scanner created!");
 }

@@ -80,8 +80,16 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
 	ROS_INFO("LabelDetectorNodeHandler: [QR DETECTION]-%s ", settings.QR_ENABLED?"ON":"OFF" );
 
 	if (node.getParam("label_detector/HZL_Switch", settings.HZL_ENABLED))  other_settings_loaded = true;
-    else  node.setParam("label_detector/QR_Switch", settings.HZL_ENABLED);
+    else  node.setParam("label_detector/HZL_Switch", settings.HZL_ENABLED);
     ROS_INFO("LabelDetectorNodeHandler: [HZL DETECTION]-%s ", settings.HZL_ENABLED?"ON":"OFF" );
+
+	if (node.getParam("label_detector/QR_Canny_par1", settings.QR_CANNY_PAR1))  other_settings_loaded = true;
+    else  node.setParam("label_detector/QR_Canny_par1", settings.QR_CANNY_PAR1);
+    ROS_INFO("LabelDetectorNodeHandler: [QR_CANNY_PAR1]-%d ", settings.QR_CANNY_PAR1);
+
+	if (node.getParam("label_detector/QR_Canny_par2", settings.QR_CANNY_PAR2))  other_settings_loaded = true;
+    else  node.setParam("label_detector/QR_Canny_par2", settings.QR_CANNY_PAR2);
+    ROS_INFO("LabelDetectorNodeHandler: [QR_CANNY_PAR2]-%d ", settings.QR_CANNY_PAR2);
 
     if (other_settings_loaded)  _detector.setSettings(settings);
 }
@@ -90,14 +98,19 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
 void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level)
 {	
 	DetectorSettings settings;
-    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[HZL DETECTION]-%s \n\t[QR-WIDTH] x (mm) ",
+    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[HZL DETECTION]-%s \n\t[QR_CANNY_PAR1]-%d \n\t[QR_CANNY_PAR2]-%d \n\t[QR-WIDTH] x (mm)  ",
                 config.Debugging?"ON":"OFF",
                 config.QR_Switch?"ON":"OFF",
-                config.HZL_Switch?"ON":"OFF");
+                config.HZL_Switch?"ON":"OFF",
+                config.QR_Canny_par1,
+                config.QR_Canny_par2
+                );
 
     settings.DEBUGGING = config.Debugging;
     settings.QR_ENABLED = config.QR_Switch;
     settings.HZL_ENABLED = config.HZL_Switch;
+    settings.QR_CANNY_PAR1 = config.QR_Canny_par1;
+    settings.QR_CANNY_PAR2 = config.QR_Canny_par2;
 
     _detector.setSettings(settings);
 }

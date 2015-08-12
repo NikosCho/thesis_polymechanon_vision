@@ -20,6 +20,16 @@ LabelDetector::~LabelDetector(){
 void LabelDetector::setSettings(DetectorSettings& settings)
 {
 	_settings = settings;
+
+	// for ( auto scanner:_scanners )
+	// {	
+	// 	if ( scanner-> getType() == LabelType::QRCODE) {
+	// 		if ( _settings.QR_ENABLED ) {
+	// 			scanner->setParameters(_settings.QR_CANNY_PAR1, _settings.QR_CANNY_PAR2);
+	// 		}
+	// 	}
+	// }
+
 }
 
 bool LabelDetector::setInputImage(cv::Mat input_image)
@@ -57,6 +67,7 @@ bool LabelDetector::detect()
 	{	
 
 		scanner->setImageToScan(_input_image);
+		// scanner->setParameters(_settings);
 		if ( scanner->scan() ) {
 			if (_settings.DEBUGGING )    scanner->drawDetectedLabels(_input_image);
 			std::vector<vector<Point2D> > detected_labels_contours = scanner->getDetectedLabels();
@@ -101,11 +112,10 @@ void LabelDetector::setupScanners()
 	} else if ( !_settings.QR_ENABLED ) {
 		removeScannerbyType(LabelType::QRCODE);
 	}
+
 	///////////////////////////////////////////////////////////////////////////////
 	//                  Any other scanner must be placed here!!                  //
 	///////////////////////////////////////////////////////////////////////////////
-
-
 }
 
 // Check if there is a scanner of this label's type

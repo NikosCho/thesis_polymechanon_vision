@@ -35,6 +35,12 @@ vector<vector<Point2D> > Scanner::getDetectedLabels()
 	return _detected_labels;
 }
 
+bool Scanner::setParameters(int par1, int par2)
+{
+	return true;
+}
+
+
 //////////////////////////////// Debugging Functions ////////////////////////////////
 bool Scanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
 {	

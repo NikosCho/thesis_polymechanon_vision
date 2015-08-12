@@ -23,10 +23,12 @@
 			<param name="QR_Switch" value="true" />
 			<param name="HZL_Switch" value="true" />
 			<param name="Qrcode_side_length" value="146" />
+			<param name="QR_Canny_par1" value="100" />
+			<param name="QR_Canny_par2" value="200" />
 		</node>
 
 	<!-- RQT -->
-	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" />
+	<!-- <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" /> -->
 
 </launch>
 

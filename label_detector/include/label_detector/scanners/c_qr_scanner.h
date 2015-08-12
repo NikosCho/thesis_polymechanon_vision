@@ -19,6 +19,8 @@
 // Other class dependecies
 #include "label_detector/c_scanner.h"
 #include "label_detector/c_label.h"
+// #include "label_detector/c_label_detector.h"
+
 
 using std::vector;
 using std::pair; //?
@@ -68,10 +70,7 @@ public:
 	bool scan();
 	vector<vector<Point2D> > getDetectedLabels();
 
-
-
-
-
+	bool setParameters(int par1, int par2);
 
 	///////////////////// Debugging Functions /////////////////////
 	bool drawDetectedLabels(shared_ptr<cv::Mat> inputimage);
@@ -86,6 +85,10 @@ private:
 
 	zbar::ImageScanner scanner_;
 
+	int _canny_param1;
+	int _canny_param2;
+
+	vector<QrMarker> qr_markers_;
 
 	// Scanning functions
 	vector<vector<ContourPoint> > findAlignmentMarkers(const cv::Mat& image);
@@ -95,9 +98,12 @@ private:
 	vector<vector<ContourPoint> > getContours(const vector<int>& contours_by_id, const vector<vector<ContourPoint> >& contours);
 	vector<QrMarker> getMarkers(const vector<int>& contours_by_id, const vector<vector<ContourPoint> >& contours, const vector<Point2D>& mass_centers);
 	void sortMarkers(vector<QrMarker>& markers);
+	int individualizeTopLeftMarkerbyDiagonal(vector<QrMarker>& markers);
+	int individualizeTopLeftMarkerbyAngle(vector<QrMarker>& markers);
 	void sortMarkersVertices(vector<QrMarker>& markers);
 	vector<Point2D> findSquare(const vector<QrMarker>& markers);
-	std::string translate(const cv::Mat &gray_input_image,const vector<Point2D>& qr_vertices);
+	// std::string translate(const cv::Mat &gray_input_image,const vector<Point2D>& qr_vertices);
+	bool translate(const cv::Mat &gray_input_image,const vector<Point2D>& qr_vertices, std::string& message);
 
 	template<typename Ta, typename Tb>
 	double calculateDistance(const Ta& point1, const Tb& point2);
@@ -106,11 +112,15 @@ private:
 	template<typename T>
 	double calculateSlope(const T& pointA, const T& pointB);
 	template<typename T>
+	double calculateSlope(const vector<T>& line);
+	template<typename T>
 	double calculateAngle(const T& pointA, const T& pointB, const T& pointC);
 	template<typename T>
 	T findIntersection(const vector<T>& lineA, const vector<T>& lineB);
 	template<typename T, typename Tc>
 	void calculateCoefficients(const T& pointA, const T& pointB, Tc &a, Tc &b, Tc &c);
+	template<typename T, typename Tc>
+	void calculateCoefficients(const vector<T>& line, Tc &a, Tc &b, Tc &c);
 	template<typename T>
 	T findProjection(const T& point, const T& point_of_lineA, const T& point_of_lineB);
 
@@ -123,6 +133,7 @@ private:
 	void drawMarkerVertices(cv::Mat &inputimage, const vector<QrMarker>& markers );
 	void drawVertices(cv::Mat &inputimage, const vector<Point2D>& vertices );
 	void drawLines(cv::Mat &inputimage, const vector<QrMarker>& markers );
+void drawLine(shared_ptr<cv::Mat> inputimage, const vector<Point2D>& line, cv::Scalar color );
 	void drawSquare(cv::Mat &inputimage, const vector<Point2D>& vertices, const vector<ContourPoint>& top_marker);
 	///////////////////
 };
