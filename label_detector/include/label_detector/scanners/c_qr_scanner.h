@@ -32,6 +32,7 @@ using std::distance;
 using std::rotate;
 using std::max_element;
 
+// using std::signbit;
 
 using std::cout;
 using std::endl;
@@ -97,7 +98,8 @@ private:
 	vector<Point2D> getMassCenters(const vector<int>& contours_by_id, const vector<Point2D>& mass_centers);
 	vector<vector<ContourPoint> > getContours(const vector<int>& contours_by_id, const vector<vector<ContourPoint> >& contours);
 	vector<QrMarker> getMarkers(const vector<int>& contours_by_id, const vector<vector<ContourPoint> >& contours, const vector<Point2D>& mass_centers);
-	void sortMarkers(vector<QrMarker>& markers);
+	bool sortMarkers(vector<QrMarker>& markers);
+	int individualizeTopLeftMarker(vector<QrMarker>& markers);
 	int individualizeTopLeftMarkerbyDiagonal(vector<QrMarker>& markers);
 	int individualizeTopLeftMarkerbyAngle(vector<QrMarker>& markers);
 	void sortMarkersVertices(vector<QrMarker>& markers);
@@ -123,6 +125,8 @@ private:
 	void calculateCoefficients(const vector<T>& line, Tc &a, Tc &b, Tc &c);
 	template<typename T>
 	T findProjection(const T& point, const T& point_of_lineA, const T& point_of_lineB);
+	template<typename T>
+	bool pointLiesBetweenLines(const T& point, vector<T> lineA, vector<T> lineB);
 
 
 	// TEST ////////////
@@ -133,7 +137,7 @@ private:
 	void drawMarkerVertices(cv::Mat &inputimage, const vector<QrMarker>& markers );
 	void drawVertices(cv::Mat &inputimage, const vector<Point2D>& vertices );
 	void drawLines(cv::Mat &inputimage, const vector<QrMarker>& markers );
-void drawLine(shared_ptr<cv::Mat> inputimage, const vector<Point2D>& line, cv::Scalar color );
+	void drawLine(shared_ptr<cv::Mat> inputimage, const vector<Point2D>& line, cv::Scalar color );
 	void drawSquare(cv::Mat &inputimage, const vector<Point2D>& vertices, const vector<ContourPoint>& top_marker);
 	///////////////////
 };
