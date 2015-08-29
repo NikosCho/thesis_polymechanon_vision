@@ -93,10 +93,6 @@ bool QrScanner::scan()
 	return true;
 }
 
-/// Get the detected labels' contours.
-/**
-*	\returns vector<vector<Point2D> > "detected_labels"
-*/
 vector<vector<Point2D> > QrScanner::getDetectedLabels()
 {
 	return _detected_labels;
@@ -495,7 +491,6 @@ bool QrScanner::sortMarkers(vector<QrMarker>& markers)
 // 	vector<Point2D> temp_lineA;
 // 	vector<Point2D> temp_lineB;
 
-<<<<<<< HEAD
 // 	// for_each(begin(markers), end(markers), [&] (const QrMarker& marker) {
 // 	for( int mm = 0; mm < markers.size(); ++mm) 
 // 	{
@@ -535,64 +530,6 @@ bool QrScanner::sortMarkers(vector<QrMarker>& markers)
 // 		top_left_marker = std::distance( begin(markers_votes), it );
 // 	}
 // 	return top_left_marker;
-=======
-// bool QrScanner::sortMarkers(vector<QrMarker>& markers)
-// {
-// 	int top_left, bottom_left, top_right;
-
-// 	// Distinguish top_left marker
-// 	try {
-// 		top_left = individualizeTopLeftMarker(markers);
-// 		// top_left = individualizeTopLeftMarkerbyDiagonal(markers);
-// 		// top_left = individualizeTopLeftMarkerbyAngle(markers);
-// 	} catch (const std::runtime_error& e ) {
-// 		ROS_WARN("[QrScanner]-getMarkers() : while trying to distinguish top_left marker : \n %s", e.what());
-// 		return false;
-// 	}
-
-// 	// Set random values to the other markers.
-// 	if ( top_left == 0 )    	{ bottom_left = 1;    top_right = 2; }
-// 	else if ( top_left == 1 )   { bottom_left = 0;    top_right = 2; }
-// 	else if ( top_left == 2 )   { bottom_left = 0;    top_right = 1; }
-
-// 	// Now we are ready to check which one of the other 2 markers is the 'bottom'
-// 	// and which is the 'right' one
-// 	Point2D mid_point = findMiddlePoint(markers[top_right].mass_center, markers[bottom_left].mass_center);
-// 	Point2D top_marker = markers[top_left].mass_center;    // Used to hold the top left marker's id (just to keep the following lines cleaner).
-
-// 	// Now we will find the orientation of top marker according to the calculated middle point
-// 	int	orientation;
-// 	// Orientation ///////////// (cv::Mat's axes)
-// 	//           0   x --------------- x++
-// 	//           y           |
-// 	//           |      0    |     1
-// 	//           |           |
-// 	//           |  ---------P-----------
-// 	//           |           |
-// 	//           |      3    |    2
-// 	//          y++          |
-// 	////////////////////////////////////////
-// 	if ( top_marker.x <= mid_point.x ) {
-// 		if ( top_marker.y <= mid_point.y )    orientation = 0;
-// 		else if ( top_marker.y > mid_point.y )    orientation = 3;
-// 	}
-// 	else if ( top_marker.x > mid_point.x ) {
-// 		if ( top_marker.y <= mid_point.y )    orientation = 1;
-// 		else if ( top_marker.y > mid_point.y )    orientation = 2;
-// 	}
-
-// 	if ( orientation == 0 || orientation == 3 ) {
-// 		if ( markers[bottom_left].mass_center.x > markers[top_right].mass_center.x )    std::swap(bottom_left, top_right);
-// 	} else if ( orientation == 1 || orientation == 2 ) {
-// 		if ( markers[bottom_left].mass_center.x <= markers[top_right].mass_center.x )    std::swap(bottom_left, top_right);
-// 	} else {
-// 		ROS_WARN("[QrScanner]-getMarkers() : invalid orientation value. ");
-// 		return false;
-// 	}
-
-// 	markers = vector<QrMarker>{ markers[top_left], markers[top_right], markers[bottom_left] };
-// 	return true;
->>>>>>> 38c51a172c71bb43ad2a43765df732668b7b1668
 // }
 
 int QrScanner::individualizeTopLeftMarker(vector<QrMarker>& markers)

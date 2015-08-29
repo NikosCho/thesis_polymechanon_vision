@@ -86,8 +86,7 @@ foreach(ITEM ${TESTS})
     catkin_add_gtest(${filename} ${ITEM}  src/c_label_detector.cpp
                                           src/c_label.cpp
                                           src/c_scanner.cpp
-                                          src/scanners/c_qr_scanner.cpp
-                                          src/scanners/c_hzl_scanner.cpp)
+                                          src/scanners/c_qr_scanner.cpp)
     target_link_libraries(${filename} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Zbar_INCLUDE_DIR})
 endforeach()
 

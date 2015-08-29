@@ -22,7 +22,6 @@ typedef cv::Point ContourPoint;
 
 namespace polymechanon_vision {
 
-<<<<<<< HEAD
 struct HzLabelTemplate {
 	std::string name;
 	cv::Mat image;
@@ -41,10 +40,6 @@ struct HzlLabel {
 	int match;
 	double confidence;
 };
-=======
-typedef cv::Point2f Point2D;
-
->>>>>>> 38c51a172c71bb43ad2a43765df732668b7b1668
 
 class HzlScanner : public Scanner
 {	
@@ -65,7 +60,6 @@ public:
 	bool drawDetectedLabels(cv::Mat &inputimage);
 	cv::Mat getImageOfDetectedLabels(const cv::Mat &inputimage);
 
-<<<<<<< HEAD
 
 
 private:
@@ -110,12 +104,6 @@ private:
 
 	void drawContours(cv::Mat &inputimage, const vector<vector<ContourPoint> >& contours );
 	void drawMatches(cv::Mat &inputimage, vector<HzlLabel> &labels);
-=======
-private:
-	/* shared_ptr<cv::Mat> _image_to_scan */
-	static const LabelType _type = LabelType::HZL;
-	vector<vector<Point2D> > _detected_labels;	
->>>>>>> 38c51a172c71bb43ad2a43765df732668b7b1668
 
 
 };

@@ -21,7 +21,6 @@ LabelDetectorNodeHandler::~LabelDetectorNodeHandler(){}
 void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& img_sub_msg)
 {	
 	cv::Mat camera_input;
-		std::cout << " yo ? " << std::endl;
 
 	try  {
 		cv_bridge::CvImageConstPtr cv_ptr;
@@ -33,13 +32,11 @@ void LabelDetectorNodeHandler::imageCallback(const sensor_msgs::ImageConstPtr& i
 		ROS_ERROR("LabelDetectorNodeHandler::imageCallback() : Could not convert (image message) from '%s' to 'bgr8'.", img_sub_msg->encoding.c_str());
 	}
 
-	cv::imshow("sadsa", camera_input);
-
 
 
 	/////////////////////////////////////////////////////
-	// _detector.setInputImage(camera_input);
-	// _detector.detect();
+	_detector.setInputImage(camera_input);
+	_detector.detect();
 	/////////////////////////////////////////////////////
 
 

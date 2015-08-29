@@ -87,7 +87,6 @@ bool LabelDetector::detect()
 
 
 	}
-		std::cout << " ha ? " << std::endl;
 
 
 	if ( _settings.DEBUGGING ) {
