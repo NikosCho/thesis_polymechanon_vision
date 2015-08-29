@@ -53,9 +53,10 @@ enum class QrOrientation
 
 struct QrMarker 
 {
-	vector<ContourPoint> contour;
+	vector<Point2D> contour;
 	Point2D mass_center;
-	QrMarker(const vector<ContourPoint> contour, const Point2D mass_center): contour(contour), mass_center(mass_center) {}
+	QrMarker() {}
+	QrMarker(const vector<Point2D> contour, const Point2D mass_center): contour(contour), mass_center(mass_center) {}
 };
 
 
@@ -90,6 +91,8 @@ private:
 	int _canny_param2;
 
 	vector<QrMarker> qr_markers_;
+
+	cv::Mat _testing_image;
 
 	// Scanning functions
 	vector<vector<ContourPoint> > findAlignmentMarkers(const cv::Mat& image);
@@ -128,7 +131,6 @@ private:
 	template<typename T>
 	bool pointLiesBetweenLines(const T& point, vector<T> lineA, vector<T> lineB);
 
-
 	// TEST ////////////
 
 	cv::Scalar randomColor();
@@ -138,6 +140,7 @@ private:
 	void drawVertices(cv::Mat &inputimage, const vector<Point2D>& vertices );
 	void drawLines(cv::Mat &inputimage, const vector<QrMarker>& markers );
 	void drawLine(shared_ptr<cv::Mat> inputimage, const vector<Point2D>& line, cv::Scalar color );
+	void drawLine(cv::Mat &inputimage, const vector<Point2D>& line, cv::Scalar color );
 	void drawSquare(cv::Mat &inputimage, const vector<Point2D>& vertices, const vector<ContourPoint>& top_marker);
 	///////////////////
 };

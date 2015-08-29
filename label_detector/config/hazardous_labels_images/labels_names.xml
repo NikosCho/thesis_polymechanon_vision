@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<opencv_storage>
+<hazardous_labels>
+	explosive
+	non_flammable_gas
+	organic_peroxide
+	dangerous_when_wet
+	flammable_solid
+</hazardous_labels>
+</opencv_storage>

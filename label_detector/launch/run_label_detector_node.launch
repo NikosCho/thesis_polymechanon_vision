@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 	<!-- CAMERA NODE (camera_umd_package) -->
-	<node pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera" output="screen">
+	<node pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera" >  <!-- output="screen"> -->
 		<param name="width" type="int" value="640" />
 		<param name="height" type="int" value="480" />
 		<param name="fps" type="int" value="120" />
@@ -25,10 +25,13 @@
 			<param name="Qrcode_side_length" value="146" />
 			<param name="QR_Canny_par1" value="100" />
 			<param name="QR_Canny_par2" value="200" />
+        	<param name="Hzl_matching_method" value="4" />      
+        	<param name="Hzl_enable_histogram_matching" value="true" />      
+
 		</node>
 
 	<!-- RQT -->
-	<!-- <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" /> -->
+	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" />
 
 </launch>
 

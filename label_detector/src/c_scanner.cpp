@@ -40,6 +40,11 @@ bool Scanner::setParameters(int par1, int par2)
 	return true;
 }
 
+bool Scanner::setParameters(int par1, int par2, int side_length, int match_mehod, int contour_area_thres)
+{
+	return true;
+}
+
 
 //////////////////////////////// Debugging Functions ////////////////////////////////
 bool Scanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)

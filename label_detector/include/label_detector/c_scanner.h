@@ -16,9 +16,10 @@
 using std::shared_ptr;
 using std::vector;
 
-namespace polymechanon_vision {
-
 typedef cv::Point2f Point2D;
+
+
+namespace polymechanon_vision {
 
 class Scanner
 {
@@ -33,6 +34,8 @@ public:
 	virtual vector<vector<Point2D> > getDetectedLabels();	
 
 	virtual bool setParameters(int par1, int par2);
+	virtual bool setParameters(int par1, int par2, int side_length, int match_mehod, int contour_area_thres);
+
 
 	///////////////////// Debugging Functions /////////////////////
 	virtual bool drawDetectedLabels(shared_ptr<cv::Mat> inputimage);

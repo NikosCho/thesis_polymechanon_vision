@@ -21,14 +21,20 @@ void LabelDetector::setSettings(DetectorSettings& settings)
 {
 	_settings = settings;
 
-	// for ( auto scanner:_scanners )
-	// {	
-	// 	if ( scanner-> getType() == LabelType::QRCODE) {
-	// 		if ( _settings.QR_ENABLED ) {
-	// 			scanner->setParameters(_settings.QR_CANNY_PAR1, _settings.QR_CANNY_PAR2);
-	// 		}
-	// 	}
-	// }
+	for ( auto scanner:_scanners )
+	{	
+		if ( scanner-> getType() == LabelType::QRCODE) {
+			if ( _settings.QR_ENABLED ) {
+				scanner->setParameters(_settings.QR_CANNY_PAR1, _settings.QR_CANNY_PAR2);
+			}
+		}
+		if ( scanner-> getType() == LabelType::HZL) {
+			if ( _settings.HZL_ENABLED ) {
+				scanner->setParameters(100, 200, 150, _settings.HZL_MATCHING_METHOD, 10000);
+			}
+		}
+
+	}
 
 }
 
@@ -113,6 +119,13 @@ void LabelDetector::setupScanners()
 		removeScannerbyType(LabelType::QRCODE);
 	}
 
+	// Qrscanner's setup
+	if ( _settings.HZL_ENABLED && checkScannerbyType(LabelType::HZL) ) {
+		Scanner* new_scanner = new HzlScanner();
+		_scanners.push_back(new_scanner);
+	} else if ( !_settings.HZL_ENABLED ) {
+		removeScannerbyType(LabelType::HZL);
+	}
 	///////////////////////////////////////////////////////////////////////////////
 	//                  Any other scanner must be placed here!!                  //
 	///////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,7 @@
 #include "label_detector/c_label.h"
 #include "label_detector/c_scanner.h"
 #include "label_detector/scanners/c_qr_scanner.h"
+#include "label_detector/scanners/c_hzl_scanner.h"
 
 using std::vector;
 using std::shared_ptr;
@@ -30,20 +31,22 @@ namespace polymechanon_vision {
 
 struct DetectorSettings
 {	
-	bool DEBUGGING;
-	bool QR_ENABLED;
-	bool HZL_ENABLED;
+	bool DEBUGGING;    ///< Debugging switch. If true image windows, showing the results of scanning, will be opened.
+	bool QR_ENABLED;    ///< Enable/Disable Qr code scanning.
+	bool HZL_ENABLED;    ///< Enable/Disable Hazardous label scanning.
 	int QR_CANNY_PAR1;
 	int QR_CANNY_PAR2;
 
 	int QRSIDE_LENGTH;		// milimeters
+	int HZL_MATCHING_METHOD;	
 
 	DetectorSettings(): DEBUGGING(true), 
 						QR_ENABLED(true), 
 						HZL_ENABLED(true), 
 						QR_CANNY_PAR1(100), 
 						QR_CANNY_PAR2(200), 
-						QRSIDE_LENGTH(182){}
+						QRSIDE_LENGTH(182), 
+						HZL_MATCHING_METHOD(0){}
 };
 
 class LabelDetector

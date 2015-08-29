@@ -1,0 +1,14 @@
+# rosparam load labels.yaml /label_detector/hzl_scanner/labels_names
+
+
+########## only JPG!!!! #####################
+# Add only the name, not the type (only JPG)
+Hazardous_labels:
+ - explosive
+ - non_flammable_gas
+ - organic_peroxide
+ - dangerous_when_wet
+ - flammable_solid
+ # - flammable_liquid
+ # - poison_gas
+ # - spontaneously_combustible
