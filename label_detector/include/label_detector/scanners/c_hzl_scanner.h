@@ -36,10 +36,13 @@ struct HzlLabel {
 	vector<Point2D> contour;
 	cv::Mat image;
 	cv::Mat gray_image;
+	int threshold_value;
 	bool matched;
 	int match;
 	double confidence;
 };
+typedef cv::Point2f Point2D;
+
 
 class HzlScanner : public Scanner
 {	
@@ -91,19 +94,29 @@ private:
 	// void rotate_image_90n(const cv::Mat& src, const cv::Mat& dst, int angle);
 	bool matchALabel(HzlLabel& label);
 	double templateMatching(const cv::Mat &image_to_match, const cv::Mat &template_image, int whatmethod);
+	double customMatching(const cv::Mat &input_image,const cv::Mat &template_image);
+	double templateMatching2(const cv::Mat &image_to_match, const cv::Mat &template_image, int whatmethod);
 
+double customMatching2(const cv::Mat &input_image,const cv::Mat &template_image, int thres_val);
 
 	template<typename T>
 	vector<Point2D> convertToPoint2D(const vector<T> input_vector);
 	template<typename T>
 	vector<ContourPoint> convertToContourPoint(const vector<T> input_vector);
+	template<typename T>
+	void normalizeVector(vector<T>& vector);
 
+	cv::Mat calculateHueHistogram(const cv::Mat& image);
 	void calculateHistogram(const cv::Mat& image);
+	void calculateHistogram(const cv::Mat& image, std::string window_name);
 	cv::Scalar getBGRfromHUE(const int& value);
+	double compareHistograms(const cv::Mat& image, const cv::Mat& template_image, std::string window_name);
 
 
 	void drawContours(cv::Mat &inputimage, const vector<vector<ContourPoint> >& contours );
 	void drawMatches(cv::Mat &inputimage, vector<HzlLabel> &labels);
+
+int getThreholdValue(const cv::Mat& image);
 
 
 };

@@ -31,6 +31,8 @@ int main(int argc, char **argv)
 	// // std::string rest_path("/test/samples/videos/vid3.avi");
 	// // std::string rest_path("/test/samples/videos/isia.avi");
 	// // std::string rest_path("/test/samples/videos/gyrw2.avi");
+	// std::string rest_path("/test/samples/videos/out.avi");
+	// // std::string rest_path("/test/samples/videos/gyrw2.avi");
 	// // std::string rest_path("/test/samples/videos/gyrw.avi");
 	// // std::string rest_path("/test/samples/videos/error.avi");
 
@@ -52,16 +54,17 @@ int main(int argc, char **argv)
 	// // std::string rest_path("/test/samples/pictures/colors/orange.png");
 	// // std::string rest_path("/test/samples/pictures/colors/blue.png");
 	// // std::string rest_path("/test/samples/pictures/colors/yellow.png");
-	// std::string rest_path("/test/samples/pictures/colors/green.png");
+	// // std::string rest_path("/test/samples/pictures/colors/green.png");
 
 	// ////////////////////////////////////////////
+
 
 
 	// filepath.append(rest_path);	
 	// ROS_ERROR("%s",filepath.c_str());
 
-	// // polymechanon_vision::TestLabelDetectorNodeHandler my_detector(filepath,"video");
-	// polymechanon_vision::TestLabelDetectorNodeHandler my_detector(filepath,"picture");
+	// polymechanon_vision::TestLabelDetectorNodeHandler my_detector(filepath,"video");
+	// // polymechanon_vision::TestLabelDetectorNodeHandler my_detector(filepath,"picture");
 	// my_detector.start();
 
 
