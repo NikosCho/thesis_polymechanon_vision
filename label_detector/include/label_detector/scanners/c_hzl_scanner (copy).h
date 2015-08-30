@@ -27,7 +27,6 @@ struct HzLabelTemplate {
 	cv::Mat image;
 	cv::Mat template_image;
 	cv::Mat gray_template_image;
-	cv::Mat hue_histogram;
 	cv::Mat thumbnail;
 	HzLabelTemplate() {}
 	HzLabelTemplate(const std::string& name , const cv::Mat& image, const cv::Mat& thumbnail): name(name), image(image), thumbnail(thumbnail){}
@@ -37,7 +36,6 @@ struct HzlLabel {
 	vector<Point2D> contour;
 	cv::Mat image;
 	cv::Mat gray_image;
-	cv::Mat hue_histogram;
 	int threshold_value;
 	bool matched;
 	int match;
@@ -72,6 +70,8 @@ private:
 	static const LabelType _type = LabelType::HZL;
 	vector<vector<Point2D> > _detected_labels;
 
+
+
 	// Parameters
 	int _canny_param1;
 	int _canny_param2;
@@ -81,20 +81,26 @@ private:
 	int _contour_area_thres;
 	bool _color_match_enabled;
 
+
 	vector<HzLabelTemplate> _labels_templates;
 	vector<Point2D> _perspective_square;
+
+	cv::Mat _testing_image;
+
 
 	bool loadLabels();
 	vector< vector<Point2D> > findLabelContours(const cv::Mat& canny_image);
 	vector<HzlLabel> getHazardousLabels(shared_ptr<cv::Mat> image, const cv::Mat& gray_image, const vector<vector<Point2D> >& contours);
+	// bool matchHazardousLabel(const cv::Mat& image);
+	// bool getHueHistgram();
+
+	// void rotate_image_90n(const cv::Mat& src, const cv::Mat& dst, int angle);
 	bool matchALabel(HzlLabel& label);
-	
-	double templateMatching(HzlLabel& label, HzLabelTemplate& template_label, int whatmethod);
-	double customMatching(const cv::Mat &input_image, const int& , const cv::Mat &template_image);
-	
-	cv::Mat getHueHistogram(const cv::Mat& image);
-	void showHueHistogram(const cv::Mat& image, const std::string& window_name);
-	cv::Scalar getBGRfromHUE(const int& hue_value);
+	double templateMatching(const cv::Mat &image_to_match, const cv::Mat &template_image, int whatmethod);
+	double customMatching(const cv::Mat &input_image,const cv::Mat &template_image);
+	double templateMatching2(const cv::Mat &image_to_match, const cv::Mat &template_image, int whatmethod);
+
+double customMatching2(const cv::Mat &input_image,const cv::Mat &template_image, int thres_val);
 
 	template<typename T>
 	vector<Point2D> convertToPoint2D(const vector<T> input_vector);
@@ -103,6 +109,20 @@ private:
 	template<typename T>
 	void normalizeVector(vector<T>& vector);
 
+	cv::Mat calculateHueHistogram(const cv::Mat& image);
+	void calculateHistogram(const cv::Mat& image);
+
+	double compareHistograms(const cv::Mat& image, const cv::Mat& template_image, std::string window_name);
+
+
+	void drawContours(cv::Mat &inputimage, const vector<vector<ContourPoint> >& contours );
+	void drawMatches(cv::Mat &inputimage, vector<HzlLabel> &labels);
+
+	cv::Mat getHueHistogram(const cv::Mat& image);
+	void showHueHistogram(const cv::Mat& image, const std::string& window_name);
+	cv::Scalar getBGRfromHUE(const int& value);
+
+int getThreholdValue(const cv::Mat& image);
 
 
 };

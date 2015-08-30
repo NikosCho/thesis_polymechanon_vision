@@ -75,13 +75,10 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
     else  node.setParam("label_detector/Debugging", settings.DEBUGGING);
     ROS_INFO("LabelDetectorNodeHandler: [DEBUGGING]-%s ", settings.DEBUGGING?"ON":"OFF" );
 
+    // QR CONFIGURATION ////////////////////////////////////////////////////////
 	if (!node.getParam("label_detector/QR_Switch", settings.QR_ENABLED))  other_settings_loaded = true;
     else  node.setParam("label_detector/QR_Switch", settings.QR_ENABLED);
 	ROS_INFO("LabelDetectorNodeHandler: [QR DETECTION]-%s ", settings.QR_ENABLED?"ON":"OFF" );
-
-	if (node.getParam("label_detector/HZL_Switch", settings.HZL_ENABLED))  other_settings_loaded = true;
-    else  node.setParam("label_detector/HZL_Switch", settings.HZL_ENABLED);
-    ROS_INFO("LabelDetectorNodeHandler: [HZL DETECTION]-%s ", settings.HZL_ENABLED?"ON":"OFF" );
 
 	if (node.getParam("label_detector/QR_Canny_par1", settings.QR_CANNY_PAR1))  other_settings_loaded = true;
     else  node.setParam("label_detector/QR_Canny_par1", settings.QR_CANNY_PAR1);
@@ -91,9 +88,30 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
     else  node.setParam("label_detector/QR_Canny_par2", settings.QR_CANNY_PAR2);
     ROS_INFO("LabelDetectorNodeHandler: [QR_CANNY_PAR2]-%d ", settings.QR_CANNY_PAR2);
 
+    // HZL CONFIGURATION ////////////////////////////////////////////////////////
+	if (node.getParam("label_detector/HZL_Switch", settings.HZL_ENABLED))  other_settings_loaded = true;
+    else  node.setParam("label_detector/HZL_Switch", settings.HZL_ENABLED);
+    ROS_INFO("LabelDetectorNodeHandler: [HZL DETECTION]-%s ", settings.HZL_ENABLED?"ON":"OFF" );
+
+	if (node.getParam("label_detector/Hzl_Canny_par1", settings.HZL_CANNY_PAR1))  other_settings_loaded = true;
+    else  node.setParam("label_detector/Hzl_Canny_par1", settings.HZL_CANNY_PAR1);
+    ROS_INFO("LabelDetectorNodeHandler: [HZL_CANNY_PAR1]-%d ", settings.HZL_CANNY_PAR1);
+
+	if (node.getParam("label_detector/Hzl_Canny_par2", settings.HZL_CANNY_PAR2))  other_settings_loaded = true;
+    else  node.setParam("label_detector/Hzl_Canny_par2", settings.HZL_CANNY_PAR2);
+    ROS_INFO("LabelDetectorNodeHandler: [HZL_CANNY_PAR2]-%d ", settings.HZL_CANNY_PAR2);
+    
 	if (node.getParam("label_detector/Hzl_matching_method", settings.HZL_MATCHING_METHOD))  other_settings_loaded = true;
     else  node.setParam("label_detector/Hzl_matching_method", settings.HZL_MATCHING_METHOD);
     ROS_INFO("LabelDetectorNodeHandler: [HZL_MATCHING_METHOD]-%d ", settings.HZL_MATCHING_METHOD);
+
+	if (node.getParam("label_detector/Hzl_template_matching_method", settings.HZL_TEMPLATE_MATCHING_METHOD))  other_settings_loaded = true;
+    else  node.setParam("label_detector/Hzl_template_matching_method", settings.HZL_TEMPLATE_MATCHING_METHOD);
+    ROS_INFO("LabelDetectorNodeHandler: [HZL_TEMPLATE_MATCHING_METHOD]-%d ", settings.HZL_TEMPLATE_MATCHING_METHOD);
+
+	if (node.getParam("label_detector/Hzl_enable_color_matching", settings.ENABLE_COLOR_MATCHING))  other_settings_loaded = true;
+    else  node.setParam("label_detector/Hzl_enable_color_matching", settings.ENABLE_COLOR_MATCHING);
+    ROS_INFO("LabelDetectorNodeHandler: [COLOR_MATCHING]-%s ", settings.ENABLE_COLOR_MATCHING?"ON":"OFF" );
 
     if (other_settings_loaded)  _detector.setSettings(settings);
 }
@@ -102,21 +120,32 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
 void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level)
 {	
 	DetectorSettings settings;
-    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[HZL DETECTION]-%s \n\t[QR_CANNY_PAR1]-%d \n\t[QR_CANNY_PAR2]-%d \n\t[HZL_MATCHING_METHOD]-%d \n\t[QR-WIDTH] x (mm)  ",
+    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[QR_CANNY_PAR1]-%d \n\t[QR_CANNY_PAR2]-%d \n\t[HZL DETECTION]-%s \n\t[HZL_CANNY_PAR1]-%d \n\t[HZL_CANNY_PAR2]-%d \n\t[HZL_MATCHING_METHOD]-%d \n\t[HZL_TEMPLATE_MATCHING_METHOD]-%d \n\t[COLOR_MATCHING]-%s ",
                 config.Debugging?"ON":"OFF",
                 config.QR_Switch?"ON":"OFF",
-                config.HZL_Switch?"ON":"OFF",
                 config.QR_Canny_par1,
                 config.QR_Canny_par2,
-                config.Hzl_matching_method
+                config.HZL_Switch?"ON":"OFF",
+                config.Hzl_Canny_par1,
+                config.Hzl_Canny_par2,
+                config.Hzl_matching_method,
+                config.Hzl_template_matching_method,
+                config.Hzl_enable_color_matching?"ON":"OFF"
                 );
 
     settings.DEBUGGING = config.Debugging;
+    // QR CONFIGURATION
     settings.QR_ENABLED = config.QR_Switch;
-    settings.HZL_ENABLED = config.HZL_Switch;
     settings.QR_CANNY_PAR1 = config.QR_Canny_par1;
     settings.QR_CANNY_PAR2 = config.QR_Canny_par2;
+
+    // HZL CONFIGURATION
+    settings.HZL_ENABLED = config.HZL_Switch;
+    settings.HZL_CANNY_PAR1 = config.Hzl_Canny_par1;
+    settings.HZL_CANNY_PAR2 = config.Hzl_Canny_par2;
     settings.HZL_MATCHING_METHOD = config.Hzl_matching_method;
+    settings.HZL_TEMPLATE_MATCHING_METHOD = config.Hzl_template_matching_method;
+    settings.ENABLE_COLOR_MATCHING = config.Hzl_enable_color_matching;
 
     _detector.setSettings(settings);
 }

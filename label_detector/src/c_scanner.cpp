@@ -40,7 +40,8 @@ bool Scanner::setParameters(int par1, int par2)
 	return true;
 }
 
-bool Scanner::setParameters(int par1, int par2, int side_length, int match_mehod, int contour_area_thres)
+
+bool Scanner::setParameters(int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match)
 {
 	return true;
 }

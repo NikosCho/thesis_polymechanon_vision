@@ -30,7 +30,7 @@ void LabelDetector::setSettings(DetectorSettings& settings)
 		}
 		if ( scanner-> getType() == LabelType::HZL) {
 			if ( _settings.HZL_ENABLED ) {
-				scanner->setParameters(100, 200, 150, _settings.HZL_MATCHING_METHOD, 10000);
+				scanner->setParameters(_settings.HZL_CANNY_PAR1, _settings.HZL_CANNY_PAR2, 150, _settings.HZL_MATCHING_METHOD, _settings.HZL_TEMPLATE_MATCHING_METHOD, 10000, _settings.ENABLE_COLOR_MATCHING);
 			}
 		}
 

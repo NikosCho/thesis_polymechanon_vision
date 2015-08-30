@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "label_detector");
 
-	polymechanon_vision::LabelDetectorNodeHandler my_detector;
+	// polymechanon_vision::LabelDetectorNodeHandler my_detector;
 
 
 
@@ -23,49 +23,50 @@ int main(int argc, char **argv)
 
 
 
-	// std::string filepath = PACKAGE_PATH;
-	// // VIDEOS //////////////////////////////////
+	std::string filepath = PACKAGE_PATH;
+	// VIDEOS //////////////////////////////////
 
-	// // std::string rest_path("/test/samples/videos/vid1.avi");
-	// // std::string rest_path("/test/samples/videos/vid2.avi");
-	// // std::string rest_path("/test/samples/videos/vid3.avi");
-	// // std::string rest_path("/test/samples/videos/isia.avi");
-	// // std::string rest_path("/test/samples/videos/gyrw2.avi");
+	// std::string rest_path("/test/samples/videos/vid1.avi");
+	// std::string rest_path("/test/samples/videos/vid2.avi");
+	// std::string rest_path("/test/samples/videos/vid3.avi");
+	// std::string rest_path("/test/samples/videos/isia.avi");
+	// std::string rest_path("/test/samples/videos/gyrw2.avi");
 	// std::string rest_path("/test/samples/videos/out.avi");
-	// // std::string rest_path("/test/samples/videos/gyrw2.avi");
-	// // std::string rest_path("/test/samples/videos/gyrw.avi");
-	// // std::string rest_path("/test/samples/videos/error.avi");
+	std::string rest_path("/test/samples/videos/test_test.avi");
+	// std::string rest_path("/test/samples/videos/gyrw2.avi");
+	// std::string rest_path("/test/samples/videos/gyrw.avi");
+	// std::string rest_path("/test/samples/videos/error.avi");
 
 
-	// // PICTURES ////////////////////////////////
+	// PICTURES ////////////////////////////////
 
-	// // std::string rest_path("/test/samples/pictures/PLAIN_QR.png");
-	// // std::string rest_path("/test/samples/pictures/qr_pic.jpg");
-	// // std::string rest_path("/test/samples/pictures/qr_pic2.jpg");
-	// // std::string rest_path("/test/samples/pictures/qr_pic4.jpg");
-	// // std::string rest_path("/test/samples/pictures/qr_pic5.jpg");
-	// // std::string rest_path("/test/samples/pictures/hzl_1.jpg");
+	// std::string rest_path("/test/samples/pictures/PLAIN_QR.png");
+	// std::string rest_path("/test/samples/pictures/qr_pic.jpg");
+	// std::string rest_path("/test/samples/pictures/qr_pic2.jpg");
+	// std::string rest_path("/test/samples/pictures/qr_pic4.jpg");
+	// std::string rest_path("/test/samples/pictures/qr_pic5.jpg");
+	// std::string rest_path("/test/samples/pictures/hzl_1.jpg");
 
-	// ////////////////////////////////////////////
+	////////////////////////////////////////////
 
-	// // COLOR  PICTURES ////////////////////////////////
+	// COLOR  PICTURES ////////////////////////////////
 
-	// // std::string rest_path("/test/samples/pictures/colors/red.png");
-	// // std::string rest_path("/test/samples/pictures/colors/orange.png");
-	// // std::string rest_path("/test/samples/pictures/colors/blue.png");
-	// // std::string rest_path("/test/samples/pictures/colors/yellow.png");
-	// // std::string rest_path("/test/samples/pictures/colors/green.png");
+	// std::string rest_path("/test/samples/pictures/colors/red.png");
+	// std::string rest_path("/test/samples/pictures/colors/orange.png");
+	// std::string rest_path("/test/samples/pictures/colors/blue.png");
+	// std::string rest_path("/test/samples/pictures/colors/yellow.png");
+	// std::string rest_path("/test/samples/pictures/colors/green.png");
 
-	// ////////////////////////////////////////////
+	////////////////////////////////////////////
 
 
 
-	// filepath.append(rest_path);	
-	// ROS_ERROR("%s",filepath.c_str());
+	filepath.append(rest_path);	
+	ROS_ERROR("%s",filepath.c_str());
 
-	// polymechanon_vision::TestLabelDetectorNodeHandler my_detector(filepath,"video");
-	// // polymechanon_vision::TestLabelDetectorNodeHandler my_detector(filepath,"picture");
-	// my_detector.start();
+	polymechanon_vision::TestLabelDetectorNodeHandler my_detector(filepath,"video");
+	// polymechanon_vision::TestLabelDetectorNodeHandler my_detector(filepath,"picture");
+	my_detector.start();
 
 
 
