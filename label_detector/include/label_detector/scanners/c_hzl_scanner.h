@@ -87,10 +87,10 @@ private:
 	bool loadLabels();
 	vector< vector<Point2D> > findLabelContours(const cv::Mat& canny_image);
 	vector<HzlLabel> getHazardousLabels(shared_ptr<cv::Mat> image, const cv::Mat& gray_image, const vector<vector<Point2D> >& contours);
-	bool matchALabel(HzlLabel& label);
+	bool matchLabel(HzlLabel& label);
 	
 	double templateMatching(HzlLabel& label, HzLabelTemplate& template_label, int whatmethod);
-	double customMatching(const cv::Mat &input_image, const int& , const cv::Mat &template_image);
+	double customMatching(HzlLabel& label, HzLabelTemplate& template_label);
 	
 	cv::Mat getHueHistogram(const cv::Mat& image);
 	void showHueHistogram(const cv::Mat& image, const std::string& window_name);
@@ -102,7 +102,11 @@ private:
 	vector<ContourPoint> convertToContourPoint(const vector<T> input_vector);
 	template<typename T>
 	void normalizeVector(vector<T>& vector);
+	template<typename Ta, typename Tb>
+	Ta findMiddlePoint(const Ta& pointA, const Tb& pointB);
 
+	void drawMatches(cv::Mat &inputimage, vector<HzlLabel> &labels);
+	void drawMatch(cv::Mat &inputimage, const HzlLabel& label);
 
 
 };

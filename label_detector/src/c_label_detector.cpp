@@ -77,8 +77,9 @@ bool LabelDetector::detect()
 		if ( scanner->scan() ) {
 			if (_settings.DEBUGGING )    scanner->drawDetectedLabels(_input_image);
 			std::vector<vector<Point2D> > detected_labels_contours = scanner->getDetectedLabels();
+			cout << "WUT WUT " << detected_labels_contours.size();
 
-
+			// _labels_contours.insert(end(_labels_contours), begin(detected_labels_contours), end(detected_labels_contours));
 			_labels_contours.insert(end(_labels_contours), begin(detected_labels_contours), end(detected_labels_contours));
 
 

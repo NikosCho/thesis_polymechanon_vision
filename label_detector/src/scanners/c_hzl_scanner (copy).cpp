@@ -66,7 +66,7 @@ bool HzlScanner::scan()
 
 	_testing_image = (*_image_to_scan).clone();
 
-	calculateHistogram(_testing_image);
+	showHueHistogram(_testing_image, "hue");
 
 
 	cv::Mat camera_input = (*_image_to_scan).clone();
@@ -143,8 +143,8 @@ bool HzlScanner::scan()
 			// calculateHistogram(labels[kk].image, "image");
 			// calculateHistogram(_labels_templates[labels[kk].match].template_image, "match");
 
-			calculateHueHistogram(labels[kk].image);
-			calculateHueHistogram(_labels_templates[labels[kk].match].template_image);
+			showHueHistogram(labels[kk].image,"name" );
+			calculateHueHistogram(_labels_templates[labels[kk].match].template_image, "name");
 
 
 			// cout << "Compare Histograms' result : " 
@@ -928,13 +928,9 @@ double HzlScanner::compareHistograms(const cv::Mat& image, const cv::Mat& templa
 	cv::imshow(window_name, histImage );
 
 
-			// CV_COMP_CORREL
-			// CV_COMP_CHISQR
-			// CV_COMP_INTERSECT
-			// CV_COMP_BHATTACHARYYA or CV_COMP_HELLINGER
 	double value = compareHist( hue_hist, 
 								hue_template_hist,
-								CV_COMP_INTERSECT);
+								CV_COMP_INTERSECT);    // CV_COMP_CORREL  ||  CV_COMP_CHISQR  ||  CV_COMP_INTERSECT  ||  CV_COMP_BHATTACHARYYA or CV_COMP_HELLINGER
 	return value;
 
 }

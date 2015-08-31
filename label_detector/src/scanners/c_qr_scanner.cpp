@@ -81,9 +81,10 @@ bool QrScanner::scan()
 
 		if ( qr_code_vertices.size() == 4 && isContourConvex(qr_code_vertices) ) {
 			std::string message;
-			// if ( translate(caminput_gray, qr_code_vertices, message) )
-			// 				cout << message << endl;
-			_detected_labels.push_back(qr_code_vertices);
+			if ( translate(caminput_gray, qr_code_vertices, message) ) {
+							cout << message << endl;
+				_detected_labels.push_back(qr_code_vertices);
+			}
 		}
 	}
 

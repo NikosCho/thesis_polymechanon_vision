@@ -1,5 +1,26 @@
 #include "label_detector/scanners/c_hzl_scanner.h"
 
+//
+/*
+
+contourArea
+
+Calculates a contour area.
+
+C++: double contourArea(InputArray contour, bool oriented=false )
+
+Python: cv2.contourArea(contour[, oriented]) → retval
+
+C: double cvContourArea(const CvArr* contour, CvSlice slice=CV_WHOLE_SEQ, int oriented=0 )
+
+Python: cv.ContourArea(contour, slice=CV_WHOLE_SEQ) → float
+    Parameters:	
+
+        contour – Input vector of 2D points (contour vertices), stored in std::vector or Mat.
+        oriented – Oriented area flag. If it is true, the function returns a signed area value, depending on the contour orientation (clockwise or counter-clockwise). Using this feature you can determine orientation of a contour by taking the sign of an area. By default, the parameter is false, which means that the absolute value is returned.
+
+
+*/
 namespace polymechanon_vision {
 
 HzlScanner::HzlScanner(shared_ptr<cv::Mat> input_image /* = nullptr */)
@@ -12,7 +33,7 @@ HzlScanner::HzlScanner(shared_ptr<cv::Mat> input_image /* = nullptr */)
 	_canny_param2 = 200;
 	_label_side_length = 150;
 	_match_method = 0;
-	_template_match_method = 0;
+	_template_match_method = 4;
 	_contour_area_thres = 10000;
 	_color_match_enabled = true;
 
@@ -25,7 +46,6 @@ HzlScanner::HzlScanner(shared_ptr<cv::Mat> input_image /* = nullptr */)
 
 	loadLabels();
 
-	ROS_WARN("HZL-Scanner created!");
 }
 
 HzlScanner::~HzlScanner() { 
@@ -64,6 +84,9 @@ bool HzlScanner::scan()
 	} else if ( !error_handler ) 
 		error_handler = true;
 
+	cv::Mat testing_image = (*_image_to_scan).clone();
+
+
 	cv::Mat caminput_gray(_image_to_scan->size(), CV_MAKETYPE(_image_to_scan->depth(), 1));    // To hold Grayscale Image
 	cv::Mat caminput_edges(caminput_gray.size(), CV_MAKETYPE(caminput_gray.depth(), 1));    // To hold Grayscale Image
 
@@ -76,13 +99,41 @@ bool HzlScanner::scan()
 
 	vector<HzlLabel> labels = getHazardousLabels(_image_to_scan, caminput_gray, label_contours);
 
+	// for (size_t kk = 0; kk <labels.size(); kk++ ) {
+
+	// 	ROS_INFO(" MATCHING A LABEL");
+	// 	matchLabel(labels[kk]);
+
+	// 	if( labels[kk].matched ) {
+	// 		drawMatch(testing_image, labels[kk]);
+	// 		cout << "MAtch " << _labels_templates[labels[kk].match].name << " - " << labels[kk].match<< endl;
+	// 	} 
+	// 	else 
+	// 	ROS_INFO(" ---- NO MATCH");
+	// }
+
+	_detected_labels.clear();
+
 	for_each(begin(labels), end(labels), [&](HzlLabel& label){
-		matchALabel(label);
+		matchLabel(label);
+
+		// ROS_INFO(" MATCHING A LABEL");
+		if( label.matched ) {
+			drawMatch(testing_image, label);
+			// cout << "MAtch " << _labels_templates[label.match].name << " - " << label.match<< endl;
+
+			_detected_labels.push_back(label.contour);
+		} 
+		// else 
+		// ROS_INFO(" ---- NO MATCH");
+
+
 	});
 
 
 
 
+	cv::imshow("wxwxw", testing_image);
 
 
 	return true;
@@ -92,8 +143,9 @@ bool HzlScanner::scan()
 
 vector<vector<Point2D> > HzlScanner::getDetectedLabels()
 {	
-	vector<vector<Point2D> > detected_labels;
-	return detected_labels;
+	// vector<vector<Point2D> > detected_labels;
+	// return detected_labels;
+	return _detected_labels;
 }
 
 bool HzlScanner::setParameters(int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match)
@@ -206,7 +258,7 @@ vector<vector<Point2D> > HzlScanner::findLabelContours(const cv::Mat& canny_imag
 									 hierarchy[k][2] != -1 &&    // It is enclosing another contour
 									 approximated_contours[ hierarchy[k][2] ].size() == 4 &&    // The enclosing contour is quadrilateral
 									 contours_convexity[hierarchy[k][2]] &&    // The enclosing contour is convex
-									 contourArea(approximated_contours[hierarchy[k][2]]) > (contourArea(approximated_contours[k]) * 0.7) &&
+									 contourArea(approximated_contours[hierarchy[k][2]]) > ( contourArea(approximated_contours[k])*0.99) &&    // The inner contour area must be at least the 80% percent of outer's aera
 									 contourArea(approximated_contours[hierarchy[k][2]]) > _contour_area_thres;    // Threshold of aeras
 
 			if ( is_possible_label ) 
@@ -240,6 +292,7 @@ vector<HzlLabel> HzlScanner::getHazardousLabels(shared_ptr<cv::Mat> image, const
 			new_label.threshold_value = mean[0];				
 		}
 
+
 	    cv::Mat warp_matrix = getPerspectiveTransform(contour_vec[0], _perspective_square);
 
 	    cv::Mat label_raw = cv::Mat::zeros(_label_side_length, _label_side_length, CV_8UC3 );
@@ -249,7 +302,10 @@ vector<HzlLabel> HzlScanner::getHazardousLabels(shared_ptr<cv::Mat> image, const
 	    warpPerspective(cropped, label_raw, warp_matrix, cv::Size(label_raw.cols, label_raw.rows));
 
 		new_label.contour = contour;	    
-		new_label.image = label_raw;	
+
+		// new_label.image = label_raw;	
+		new_label.hue_histogram = getHueHistogram(label_raw);	
+
 		cv::Mat gray_label_raw;
 		cv::cvtColor(label_raw, gray_label_raw, CV_BGR2GRAY);    // Convert Image captured from Image Input to GrayScale 
 		new_label.gray_image = gray_label_raw;	    
@@ -261,58 +317,109 @@ vector<HzlLabel> HzlScanner::getHazardousLabels(shared_ptr<cv::Mat> image, const
 }
 
 
-bool HzlScanner::matchALabel(HzlLabel& label)
+bool HzlScanner::matchLabel(HzlLabel& label)
 {	
 	if ( _labels_templates.size() == 0 )    throw std::runtime_error( "[HzlScanner]-matchALabel() : no labels' templates are loaded" );	
 
     vector<double> matching_values;
+    vector<double> histogram_matching_values;
     for( int i = 0; i < _labels_templates.size(); i++ )  {
-    	if (_match_method == 0) 
-        	matching_values.push_back( templateMatching(label.gray_image, _labels_templates[i].gray_template_image, _template_match_method) );
-    	else if (_match_method == 1) 
-        	matching_values.push_back( customMatching(label.gray_image, _labels_templates[i].gray_template_image) );
+    	if (_match_method == 0) {
+        	matching_values.push_back( templateMatching(label, _labels_templates[i], _template_match_method) );
+
+        	if ( _color_match_enabled ) {
+        		// label.hue_histogram = getHueHistogram(label.image);
+				histogram_matching_values.push_back( compareHist( 	label.hue_histogram, 
+																	_labels_templates[i].hue_histogram,
+																	CV_COMP_INTERSECT));    	
+	    	}
+	
+    	} else if (_match_method == 1) {
+        	matching_values.push_back( customMatching(label, _labels_templates[i]) );
+        	
+        	if ( _color_match_enabled ) {
+        		// label.hue_histogram = getHueHistogram(label.image);
+				histogram_matching_values.push_back( compareHist( 	label.hue_histogram, 
+																	_labels_templates[i].hue_histogram,
+																	CV_COMP_INTERSECT));    	
+	    	}
+    	}
     }
+
+
+	// cout << "========== COMPARISON ============" << endl;
+	// for(size_t m=0; m < histogram_matching_values.size(); m++) {
+	// 	if ( _color_match_enabled ) 
+	// 		cout << "Compare Histograms' result : " << histogram_matching_values[m] << endl;
+	// 	cout << "\t template matching result : " << matching_values[m] << endl;
+
+	// } 
+
+
+    if ( _color_match_enabled ) {
+	    normalizeVector(histogram_matching_values);
+	    for(size_t c = 0; c < matching_values.size(); c++) {
+			if (_match_method == 0) {
+	    		matching_values[c] = matching_values[c] * histogram_matching_values[c];
+			} else if (_match_method == 1) {
+	    		matching_values[c] = matching_values[c] * ( 1 - histogram_matching_values[c]);
+	    	}
+		}
+	}
+
+	// for(size_t m=0; m < histogram_matching_values.size(); m++) {
+	// 	if ( _color_match_enabled ) 
+	// 		cout << " -- Normalized Compare Histograms' result : " << histogram_matching_values[m] << endl;
+	// 	cout << "\t -- Normalized template matching result : " << matching_values[m] << endl;
+
+	// } 
+
+	// cout << "_match_method - " << _match_method << endl;
+	// cout << "_template_match_method - " << _template_match_method << endl;
+	// cout << "_color_match_enabled - " << _color_match_enabled << endl;
+	// cout << "==============================" << endl;
 
     int match_id;
     double match_value;
 	if (_match_method == 0) {
 		auto max_it = std::max_element(begin(matching_values), end(matching_values));
-		match_id = std::distance( begin(matching_values), max_it )
+		match_id = std::distance( begin(matching_values), max_it);
 		match_value = *max_it;
 
-		if ( match_value > .0) {    // NOT_IMPLEMENTED
+		// if ( match_value > .0) {    // NOT_IMPLEMENTED
+			ROS_WARN(" matched");
 			label.matched = true;
     		label.match = match_id;
+			ROS_ERROR("MATCH -- %s - %d ", _labels_templates[label.match].name.c_str() ,label.match);
     		label.confidence = match_value;    // NOT_IMPLEMENTED
-		} else    label.matched = false;
+		// } else    label.matched = false;
 
 	} else if (_match_method == 1) {
 		auto min_it = std::min_element(begin(matching_values), end(matching_values));
-		match_id = std::distance( begin(matching_values), min_it )
+		match_id = std::distance( begin(matching_values), min_it);
 		match_value = *min_it;
 
-		if ( match_value > 0 ) {    // NOT_IMPLEMENTED
+		// if ( match_value > 0 ) {    // NOT_IMPLEMENTED
+			ROS_WARN(" matched");
 			label.matched = true;
     		label.match = match_id;
+			ROS_ERROR("MATCH -- %s - %d ", _labels_templates[label.match].name.c_str() ,label.match);
     		label.confidence = match_value;    // NOT_IMPLEMENTED
-		} else    label.matched = false;		
-	}
-
-
-
-	label.matched = false;
+		// } else    label.matched = false;		
+	} else label.matched = false;
+  
     return false;
 }
 
-double templateMatching(HzlLabel& label, HzLabelTemplate& template_label, int whatmethod)
+double HzlScanner::templateMatching(HzlLabel& label, HzLabelTemplate& template_label, int whatmethod)
 {
 	double minVal; 
     double maxVal; 
 
     cv::Mat temp_image;
-    copyMakeBorder( label.gray_image, temp_image, 40, 40, 40, 40,cv::BORDER_CONSTANT, cv::Scalar(255,255,255) );
+    copyMakeBorder( label.gray_image, temp_image, 20, 20, 20, 20,cv::BORDER_CONSTANT, cv::Scalar(255,255,255) );
 
-    // cv::Mat result= temp_image.clone();
+    cv::Mat result= temp_image.clone();
     /// Create the result matrix
     int result_cols =  temp_image.cols - template_label.gray_template_image.cols + 1;
     int result_rows = temp_image.rows - template_label.gray_template_image.rows + 1;
@@ -330,34 +437,17 @@ double templateMatching(HzlLabel& label, HzLabelTemplate& template_label, int wh
 
 }
 
-double HzlScanner::customMatching(const cv::Mat &input_image,const cv::Mat &template_image)
+double HzlScanner::customMatching(HzlLabel& label, HzLabelTemplate& template_label)
 {
     cv::Mat dif;
-	cv::Mat image_thres = cv::Mat::zeros(100, 100, CV_8UC1);
-    cv::Scalar image_mean, image_stddev;
-    cv::meanStdDev(input_image, image_mean, image_stddev);
-	threshold(input_image, image_thres, (int)image_mean[0], 255, CV_THRESH_BINARY);
-	// cv::adaptiveThreshold(input_image, image_thres, 255, cv::ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 3, 1);
-	cv::Mat template_thres = cv::Mat::zeros(100, 100, CV_8UC1);
-	threshold(template_image, template_thres, 0, 255, CV_THRESH_OTSU);
+    cv::Mat label_thres, template_label_thres;
 
-	// imshow("input_image", image_thres);
-	// imshow("template_image", template_thres);
+	cv::threshold(label.gray_image, label_thres, label.threshold_value, 255, CV_THRESH_BINARY);
+	cv::threshold(template_label.gray_template_image, template_label_thres, 0, 255, CV_THRESH_OTSU);
 
+    cv::absdiff(label_thres, template_label_thres, dif);
 
-    cv::absdiff(template_thres,image_thres,dif);
-
-    // cv::absdiff(input_image,template_image,dif);
-    // cv::threshold(dif, dif, 35, 255,cv::THRESH_BINARY);
-    cv::Scalar mean, stddev;
-    cv::meanStdDev(dif, mean, stddev);
-
-
-	// imshow("KAKAKA", lb_thres);
-
-    // cout << " mean[0] = " << mean[0] << endl;
-    // cout << " stddev[0] = " << stddev[0] << endl;
-
+	cv::Scalar mean = cv::mean(dif);  
     return mean[0];
 }
 
@@ -449,10 +539,85 @@ cv::Scalar HzlScanner::getBGRfromHUE(const int& hue_value)
 
 
 
+template<typename T>
+vector<Point2D> HzlScanner::convertToPoint2D(const vector<T> input_vector)
+{
+	vector<Point2D> output_vector;
+
+	for(size_t k = 0; k < input_vector.size(); k++)
+	{
+		output_vector.push_back(input_vector[k]);
+	}
+
+	return output_vector;
+}
+
+template<typename T>
+vector<ContourPoint> HzlScanner::convertToContourPoint(const vector<T> input_vector)
+{
+	vector<ContourPoint> output_vector;
+
+	for(size_t k = 0; k < input_vector.size(); k++)
+	{
+		output_vector.push_back(input_vector[k]);
+	}
+
+	return output_vector;
+}
+
+template<typename T>
+void HzlScanner::normalizeVector(vector<T>& vector)
+{
+	auto min_max_it = minmax_element(begin(vector), end(vector));
+
+	T min_value = *min_max_it.first;
+	T max_value = *min_max_it.second;
+
+	for_each(begin(vector), end(vector), [&max_value, &min_value](T& val){
+		val = (val - min_value) / (max_value - min_value);
+	});
+
+}
+
+
+/// Finds the middle point between two points.
+template<typename Ta, typename Tb>
+Ta HzlScanner::findMiddlePoint(const Ta& pointA, const Tb& pointB)
+{
+	return Ta((pointA.x+pointB.x)/2, (pointA.y+pointB.y)/2);
+}
 
 
 
 
+
+
+
+
+
+
+
+
+void HzlScanner::drawMatches(cv::Mat &inputimage, vector<HzlLabel> &labels)
+{   
+
+    for(auto label : labels )   {   // For each (of the 3) markers of our identifier
+        // cout << "?" << endl;
+        cv::Rect roi( label.contour[0], cv::Size( _labels_templates[label.match].thumbnail.cols, _labels_templates[label.match].thumbnail.rows) );
+        _labels_templates[label.match].thumbnail.copyTo( inputimage( roi ) );
+    }
+
+
+
+    // cv::circle( inputimage, mycenter, 2,  cv::Scalar(255,255,0), 2, 8, 0 );
+}
+
+
+void HzlScanner::drawMatch(cv::Mat &inputimage, const HzlLabel& label)
+{   
+        cv::Rect roi( label.contour[0], cv::Size( _labels_templates[label.match].thumbnail.cols, _labels_templates[label.match].thumbnail.rows) );
+        _labels_templates[label.match].thumbnail.copyTo( inputimage( roi ) );
+}
 
 
 
@@ -461,7 +626,29 @@ cv::Scalar HzlScanner::getBGRfromHUE(const int& hue_value)
 ///////////////////////// Debugging Functions /////////////////////////
 bool HzlScanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
 {	
-	return false;
+	if ( _detected_labels.size() == 0)    return false;
+
+	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+		cv::line(*inputimage, label[0], label[1], cv::Scalar(0,255,255), 3);
+		cv::line(*inputimage, label[1], label[2], cv::Scalar(0,255,255), 3);
+		cv::line(*inputimage, label[2], label[3], cv::Scalar(0,255,255), 3);
+		cv::line(*inputimage, label[3], label[0], cv::Scalar(0,255,255), 3);
+
+		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
+		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
+		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(0,0,0), 6);
+
+		cv::line(*inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[0])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[2])), cv::Scalar(0,0,0), 6);
+
+		cv::line(*inputimage, label[2],findMiddlePoint(label[2], findMiddlePoint(label[2], label[1])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, label[2],findMiddlePoint(label[2], findMiddlePoint(label[2], label[3])), cv::Scalar(0,0,0), 6);
+
+		cv::line(*inputimage, label[3],findMiddlePoint(label[3], findMiddlePoint(label[3], label[0])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, label[3],findMiddlePoint(label[3], findMiddlePoint(label[3], label[2])), cv::Scalar(0,0,0), 6);
+	});
+	return true;
 }
 
 bool HzlScanner::drawDetectedLabels(cv::Mat &inputimage)

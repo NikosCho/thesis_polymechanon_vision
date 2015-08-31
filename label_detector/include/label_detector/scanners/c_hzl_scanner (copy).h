@@ -81,6 +81,8 @@ private:
 	int _contour_area_thres;
 	bool _color_match_enabled;
 
+	bool _debugging;
+
 
 	vector<HzLabelTemplate> _labels_templates;
 	vector<Point2D> _perspective_square;
@@ -109,8 +111,8 @@ double customMatching2(const cv::Mat &input_image,const cv::Mat &template_image,
 	template<typename T>
 	void normalizeVector(vector<T>& vector);
 
-	cv::Mat calculateHueHistogram(const cv::Mat& image);
-	void calculateHistogram(const cv::Mat& image);
+	cv::Mat getHueHistogram(const cv::Mat& image);
+	void showHueHistogram(const cv::Mat& image, const std::string& window_name);
 
 	double compareHistograms(const cv::Mat& image, const cv::Mat& template_image, std::string window_name);
 
