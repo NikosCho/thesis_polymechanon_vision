@@ -99,8 +99,9 @@ vector<vector<Point2D> > QrScanner::getDetectedLabels()
 	return _detected_labels;
 }
 
-bool QrScanner::setParameters(int par1, int par2)
+bool QrScanner::setParameters(bool debugging, int par1, int par2)
 {	
+	_debugging = debugging;
 	_canny_param1 = par1;
 	_canny_param2 = par2;
 	return true;

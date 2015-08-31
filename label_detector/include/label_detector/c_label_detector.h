@@ -35,12 +35,14 @@ struct DetectorSettings
 	
 	//QR parameters
 	bool QR_ENABLED;    ///< Enable/Disable Qr code scanning.
+	bool QR_DBG_ENABLED;    
 	int QR_CANNY_PAR1;
 	int QR_CANNY_PAR2;
 	int QRSIDE_LENGTH;		// milimeters
 
 	//HZL parameters
 	bool HZL_ENABLED;    ///< Enable/Disable Hazardous label scanning.
+	bool HZL_DBG_ENABLED;    
 	int HZL_CANNY_PAR1;
 	int HZL_CANNY_PAR2;
 	int HZL_MATCHING_METHOD;	
@@ -49,10 +51,12 @@ struct DetectorSettings
 
 	DetectorSettings(): DEBUGGING(true), 
 						QR_ENABLED(true), 
+						QR_DBG_ENABLED(false), 
 						QR_CANNY_PAR1(100), 
 						QR_CANNY_PAR2(200), 
 						QRSIDE_LENGTH(182), 
 						HZL_ENABLED(true), 
+						HZL_DBG_ENABLED(false), 
 						HZL_CANNY_PAR1(100), 
 						HZL_CANNY_PAR2(200), 
 						HZL_MATCHING_METHOD(0), 

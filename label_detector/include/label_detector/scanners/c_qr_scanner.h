@@ -72,7 +72,7 @@ public:
 	bool scan();
 	vector<vector<Point2D> > getDetectedLabels();
 
-	bool setParameters(int par1, int par2);
+	bool setParameters(bool debugging, int par1, int par2);
 
 	///////////////////// Debugging Functions /////////////////////
 	bool drawDetectedLabels(shared_ptr<cv::Mat> inputimage);
@@ -89,6 +89,7 @@ private:
 
 	int _canny_param1;
 	int _canny_param2;
+	bool _debugging;
 
 	vector<QrMarker> qr_markers_;
 

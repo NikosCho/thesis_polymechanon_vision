@@ -27,6 +27,7 @@ struct HzLabelTemplate {
 	cv::Mat image;
 	cv::Mat template_image;
 	cv::Mat gray_template_image;
+	cv::Mat binary_template_image;
 	cv::Mat hue_histogram;
 	cv::Mat thumbnail;
 	HzLabelTemplate() {}
@@ -58,7 +59,7 @@ public:
 	bool scan();
 	vector<vector<Point2D> > getDetectedLabels();
 
-	bool setParameters(int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match);
+	bool setParameters(bool debugging, int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match);
 
 	///////////////////// Debugging Functions /////////////////////
 	bool drawDetectedLabels(shared_ptr<cv::Mat> inputimage);
@@ -71,6 +72,7 @@ private:
 	/* shared_ptr<cv::Mat> _image_to_scan */ 
 	static const LabelType _type = LabelType::HZL;
 	vector<vector<Point2D> > _detected_labels;
+	vector<HzlLabel> _labels;
 
 	// Parameters
 	int _canny_param1;
@@ -80,6 +82,7 @@ private:
 	int _template_match_method;
 	int _contour_area_thres;
 	bool _color_match_enabled;
+	bool _debugging;
 
 	vector<HzLabelTemplate> _labels_templates;
 	vector<Point2D> _perspective_square;
@@ -94,6 +97,8 @@ private:
 	
 	cv::Mat getHueHistogram(const cv::Mat& image);
 	void showHueHistogram(const cv::Mat& image, const std::string& window_name);
+	// void drawHueHistogram(cv::Mat& image, const cv::Mat& histogram, cv::Scalar& color = cv::Scalar(0,0,0));
+	void drawHueHistogram(cv::Mat& image, const cv::Mat& histogram, cv::Scalar color = {0,0,0}, int line_thickness = 2);
 	cv::Scalar getBGRfromHUE(const int& hue_value);
 
 	template<typename T>
@@ -108,6 +113,8 @@ private:
 	void drawMatches(cv::Mat &inputimage, vector<HzlLabel> &labels);
 	void drawMatch(cv::Mat &inputimage, const HzlLabel& label);
 
+
+	bool drawDebugging(cv::Mat& image_to_draw, cv::Mat& histogram_matching, const HzlLabel& label, const HzLabelTemplate& template_label );
 
 };
 

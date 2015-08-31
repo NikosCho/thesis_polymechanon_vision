@@ -25,12 +25,12 @@ void LabelDetector::setSettings(DetectorSettings& settings)
 	{	
 		if ( scanner-> getType() == LabelType::QRCODE) {
 			if ( _settings.QR_ENABLED ) {
-				scanner->setParameters(_settings.QR_CANNY_PAR1, _settings.QR_CANNY_PAR2);
+				scanner->setParameters(_settings.QR_DBG_ENABLED, _settings.QR_CANNY_PAR1, _settings.QR_CANNY_PAR2);
 			}
 		}
 		if ( scanner-> getType() == LabelType::HZL) {
 			if ( _settings.HZL_ENABLED ) {
-				scanner->setParameters(_settings.HZL_CANNY_PAR1, _settings.HZL_CANNY_PAR2, 150, _settings.HZL_MATCHING_METHOD, _settings.HZL_TEMPLATE_MATCHING_METHOD, 10000, _settings.ENABLE_COLOR_MATCHING);
+				scanner->setParameters(_settings.HZL_DBG_ENABLED, _settings.HZL_CANNY_PAR1, _settings.HZL_CANNY_PAR2, 150, _settings.HZL_MATCHING_METHOD, _settings.HZL_TEMPLATE_MATCHING_METHOD, 10000, _settings.ENABLE_COLOR_MATCHING);
 			}
 		}
 

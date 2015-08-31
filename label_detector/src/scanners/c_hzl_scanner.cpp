@@ -113,6 +113,12 @@ bool HzlScanner::scan()
 	// }
 
 	_detected_labels.clear();
+	_labels.clear();
+
+	cv::Mat debugging_image(360, 512, CV_8UC3, cv::Scalar( 0,0,0) );
+	cv::Mat TEST_TEST;
+
+
 
 	for_each(begin(labels), end(labels), [&](HzlLabel& label){
 		matchLabel(label);
@@ -122,18 +128,74 @@ bool HzlScanner::scan()
 			drawMatch(testing_image, label);
 			// cout << "MAtch " << _labels_templates[label.match].name << " - " << label.match<< endl;
 
+			if ( _color_match_enabled ) {
+				drawHueHistogram(debugging_image, _labels_templates[0].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(debugging_image, _labels_templates[1].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(debugging_image, _labels_templates[2].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(debugging_image, _labels_templates[3].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(debugging_image, _labels_templates[4].hue_histogram, cv::Scalar(80,80,80), 1);
+
+				drawHueHistogram(debugging_image, _labels_templates[label.match].hue_histogram, cv::Scalar(255,255,255), 2);
+			}
+			drawHueHistogram(debugging_image, label.hue_histogram);
+
+			drawDebugging(TEST_TEST, debugging_image, label, _labels_templates[label.match] );
+
+
 			_detected_labels.push_back(label.contour);
+			_labels.push_back(label);
 		} 
 		// else 
 		// ROS_INFO(" ---- NO MATCH");
 
 
 	});
+	
+	static int labels_detected_num;
+	if ( _debugging )
+	{	
+		// std::stringstream debugging_window_name;
 
+		for( size_t i = 0; i < _labels.size(); i++) {
+			std::stringstream debugging_window_name;
+			debugging_window_name << "[Hzl-Scanner] - Debugging label - " << i;
 
+			cv::Mat histogram_image(360, 512, CV_8UC3, cv::Scalar( 0,0,0) );
+			if ( _color_match_enabled ) {
+				drawHueHistogram(histogram_image, _labels_templates[0].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(histogram_image, _labels_templates[1].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(histogram_image, _labels_templates[2].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(histogram_image, _labels_templates[3].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(histogram_image, _labels_templates[4].hue_histogram, cv::Scalar(80,80,80), 1);
+				drawHueHistogram(histogram_image, _labels_templates[_labels[i].match].hue_histogram, cv::Scalar(255,255,255), 2);
+			}
+			drawHueHistogram(histogram_image, _labels[i].hue_histogram);
+			cv::Mat debugging_image;
+			drawDebugging(debugging_image, histogram_image, _labels[i], _labels_templates[_labels[i].match] );
+
+			cv::imshow(debugging_window_name.str(), debugging_image);
+		}
+
+		for( size_t i = labels_detected_num; i >= _labels.size(); i--) {
+			std::stringstream debugging_window_name;
+			debugging_window_name << "[Hzl-Scanner] - Debugging label - " << i;
+			cv::destroyWindow(debugging_window_name.str());
+		}
+
+	} else {
+		for( size_t i = labels_detected_num; i != -1; i--) {
+			std::stringstream debugging_window_name;
+			debugging_window_name << "[Hzl-Scanner] - Debugging label - " << i;
+			cv::destroyWindow(debugging_window_name.str());
+		}
+	}
+
+	labels_detected_num = _labels.size();
 
 
 	cv::imshow("wxwxw", testing_image);
+	// cv::imshow("debugging_image", debugging_image);
+	// cv::imshow("TEST_TEST", TEST_TEST);
 
 
 	return true;
@@ -143,13 +205,12 @@ bool HzlScanner::scan()
 
 vector<vector<Point2D> > HzlScanner::getDetectedLabels()
 {	
-	// vector<vector<Point2D> > detected_labels;
-	// return detected_labels;
 	return _detected_labels;
 }
 
-bool HzlScanner::setParameters(int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match)
+bool HzlScanner::setParameters(bool debugging, int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match)
 {	
+	_debugging = debugging;
 	_canny_param1 = par1;
 	_canny_param2 = par2;
 	_label_side_length = side_length;
@@ -217,9 +278,11 @@ bool HzlScanner::loadLabels()
 		cv::flip(new_label_template.template_image, new_label_template.template_image, 1);
 		// Set label's gray template
 		cv::cvtColor(new_label_template.template_image, new_label_template.gray_template_image, CV_BGR2GRAY);    // Convert Image captured from Image Input to GrayScale 
-		new_label_template.template_image = new_label_template.image;
+		// new_label_template.template_image = new_label_template.image;
 		// Set label's hue's histgram
 		new_label_template.hue_histogram = getHueHistogram(new_label_template.template_image);
+		// Set label's binary ( thresholded ) image
+		cv::threshold(new_label_template.gray_template_image, new_label_template.binary_template_image, 0, 255, CV_THRESH_OTSU);
 		// Set label's thumbnail
 		new_label_template.thumbnail = new_label_template.image;
 		cv::resize(new_label_template.thumbnail, new_label_template.thumbnail, cv::Size( 50, 50));
@@ -303,7 +366,7 @@ vector<HzlLabel> HzlScanner::getHazardousLabels(shared_ptr<cv::Mat> image, const
 
 		new_label.contour = contour;	    
 
-		// new_label.image = label_raw;	
+		new_label.image = label_raw;	
 		new_label.hue_histogram = getHueHistogram(label_raw);	
 
 		cv::Mat gray_label_raw;
@@ -324,7 +387,7 @@ bool HzlScanner::matchLabel(HzlLabel& label)
     vector<double> matching_values;
     vector<double> histogram_matching_values;
     for( int i = 0; i < _labels_templates.size(); i++ )  {
-    	if (_match_method == 0) {
+    	if (_match_method == 0) {    // templateMatching
         	matching_values.push_back( templateMatching(label, _labels_templates[i], _template_match_method) );
 
         	if ( _color_match_enabled ) {
@@ -334,7 +397,7 @@ bool HzlScanner::matchLabel(HzlLabel& label)
 																	CV_COMP_INTERSECT));    	
 	    	}
 	
-    	} else if (_match_method == 1) {
+    	} else if (_match_method == 1) {     // customMatching
         	matching_values.push_back( customMatching(label, _labels_templates[i]) );
         	
         	if ( _color_match_enabled ) {
@@ -440,12 +503,14 @@ double HzlScanner::templateMatching(HzlLabel& label, HzLabelTemplate& template_l
 double HzlScanner::customMatching(HzlLabel& label, HzLabelTemplate& template_label)
 {
     cv::Mat dif;
-    cv::Mat label_thres, template_label_thres;
+    cv::Mat label_thres;
+    // cv::Mat label_thres, template_label_thres;
 
 	cv::threshold(label.gray_image, label_thres, label.threshold_value, 255, CV_THRESH_BINARY);
-	cv::threshold(template_label.gray_template_image, template_label_thres, 0, 255, CV_THRESH_OTSU);
+	// cv::threshold(template_label.gray_template_image, template_label_thres, 0, 255, CV_THRESH_OTSU);
 
-    cv::absdiff(label_thres, template_label_thres, dif);
+    // cv::absdiff(label_thres, template_label_thres, dif);
+    cv::absdiff(label_thres, template_label.binary_template_image, dif);
 
 	cv::Scalar mean = cv::mean(dif);  
     return mean[0];
@@ -501,7 +566,7 @@ void HzlScanner::showHueHistogram(const cv::Mat& image, const std::string& windo
 	cv::Mat histImage( hist_h, hist_w, CV_8UC3, cv::Scalar( 0,0,0) );
 	cv::normalize(hue_hist, hue_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
 
-	for( int i = 1; i < histSize; i++ )
+	for( int i = 2; i < histSize; i++ )
 	{
 		cv::line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hue_hist.at<float>(i-1)) ) ,
 							 cv::Point( bin_w*(i), hist_h - cvRound(hue_hist.at<float>(i)) ),
@@ -509,6 +574,36 @@ void HzlScanner::showHueHistogram(const cv::Mat& image, const std::string& windo
 	}	
 
 	cv::imshow(window_name, histImage );
+}
+
+/// Draw an image's histogram.
+void HzlScanner::drawHueHistogram(cv::Mat& image, const cv::Mat& histogram, cv::Scalar color /* = {0,0,0} */, int line_thickness /*  = 2 */)
+{
+
+	// Establish the number of bins
+	int histSize = 181;
+
+	// Draw the histograms for B, G and R
+	// int hist_w = 512; int hist_h = 400;
+	int hist_w = image.cols; 
+	int hist_h = image.rows;
+	int bin_w = cvRound( (double) hist_w/histSize );
+	cv::Mat normalized_histogram;
+	cv::normalize(histogram, normalized_histogram, 0, image.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+
+
+	for( int i = 2; i < histSize; i++ )
+	{	
+		if ( color == cv::Scalar(0,0,0) )
+			cv::line( image, cv::Point( bin_w*(i-1), hist_h - cvRound(normalized_histogram.at<float>(i-1)) ) ,
+								 cv::Point( bin_w*(i), hist_h - cvRound(normalized_histogram.at<float>(i)) ),
+								 getBGRfromHUE(i), line_thickness, 8, 0  );
+		else 
+			cv::line( image, cv::Point( bin_w*(i-1), hist_h - cvRound(normalized_histogram.at<float>(i-1)) ) ,
+								 cv::Point( bin_w*(i), hist_h - cvRound(normalized_histogram.at<float>(i)) ),
+								 color, line_thickness, 8, 0  );
+	}	
+
 }
 
 /// Convert hue's value to an rgb color.
@@ -620,7 +715,78 @@ void HzlScanner::drawMatch(cv::Mat &inputimage, const HzlLabel& label)
 }
 
 
+bool HzlScanner::drawDebugging(cv::Mat& image_to_draw, cv::Mat& histogram_matching, const HzlLabel& label, const HzLabelTemplate& template_label )
+{	
+	int temp_int_1 = histogram_matching.rows;
+	int temp_int_2 = 2*label.image.rows + 60;
 
+	int rows = temp_int_1 >= temp_int_2? temp_int_1 : temp_int_2;
+
+	// int rows = histogram_matching.rows;
+	int cols = histogram_matching.cols + (2*label.image.cols) + 10;
+	image_to_draw = cv::Mat(rows, cols,  CV_8UC3);
+	image_to_draw.setTo(cv::Scalar(0,0,0));
+
+	// Draw histogram
+    cv::Rect roi( cv::Point(0,0), cv::Size(  histogram_matching.cols, histogram_matching.rows) );
+    histogram_matching.copyTo( image_to_draw( roi ) );
+	// Draw label's colored image
+    roi = { cv::Point(histogram_matching.cols + 10, 30), cv::Size(label.image.cols, label.image.rows) };
+    label.image.copyTo( image_to_draw( roi ) );
+	// Draw template's colored image
+    roi = { cv::Point(histogram_matching.cols + 10, label.image.rows + 60), cv::Size(template_label.template_image.cols, template_label.template_image.rows) };
+    template_label.template_image.copyTo( image_to_draw( roi ) );
+
+    // Draw label's and template's matching images
+    if (_match_method == 0) {    // templateMatching
+	    // Label
+	    cv::Rect roi_1( cv::Point(histogram_matching.cols + label.image.cols + 10, 30), cv::Size(label.gray_image.cols, label.gray_image.rows) );
+	    cv::Mat temp_image1;
+		cvtColor(label.gray_image, temp_image1, CV_GRAY2BGR);
+	    temp_image1.copyTo( image_to_draw( roi_1 ) );		
+	    // Template
+	    cv::Rect roi_2( cv::Point(histogram_matching.cols + label.image.cols + 10, label.image.rows + 60), cv::Size(template_label.gray_template_image.cols, template_label.gray_template_image.rows) );
+	    cv::Mat temp_image2;
+		cvtColor(template_label.gray_template_image, temp_image2, CV_GRAY2BGR);
+	    temp_image2.copyTo( image_to_draw( roi_2 ) );
+	} else {    // customMatching
+	    // Label
+	    cv::Rect roi_1( cv::Point(histogram_matching.cols + label.image.cols + 10, 30), cv::Size(label.gray_image.cols, label.gray_image.rows) );
+	    cv::Mat temp_image1;
+		cv::threshold(label.gray_image, temp_image1, label.threshold_value, 255, CV_THRESH_BINARY);
+		cvtColor(temp_image1, temp_image1, CV_GRAY2BGR);
+	    temp_image1.copyTo( image_to_draw( roi_1 ) );
+	    // Template
+	    cv::Rect roi_2( cv::Point(histogram_matching.cols + label.image.cols + 10, label.image.rows + 60), cv::Size(template_label.gray_template_image.cols, template_label.gray_template_image.rows) );
+	    cv::Mat temp_image2;
+		cv::threshold(template_label.gray_template_image, temp_image2, 0, 255, CV_THRESH_OTSU);
+		cvtColor(temp_image2, temp_image2, CV_GRAY2BGR);
+	    temp_image2.copyTo( image_to_draw( roi_2 ) );
+	}
+
+    // Draw separators
+	cv::rectangle(	image_to_draw, 
+					cv::Point(histogram_matching.cols, 0), 
+					cv::Point(histogram_matching.cols + 10, rows), 
+					cv::Scalar(50,50,50), CV_FILLED );
+	cv::rectangle(	image_to_draw, 
+					cv::Point(histogram_matching.cols + 10, 0), 
+					cv::Point(histogram_matching.cols + 10 + 2*label.image.cols, 30), 
+					cv::Scalar(50,50,50), CV_FILLED );
+	cv::rectangle(	image_to_draw, 
+					cv::Point(histogram_matching.cols + 10, label.image.rows + 30 ), 
+					cv::Point(histogram_matching.cols + 10 + 2*label.image.cols, label.image.rows + 60), 
+					cv::Scalar(50,50,50), CV_FILLED );
+
+	// Draw text
+	std::string label_text(" Label: ");
+	cv::putText(image_to_draw, label_text, cv::Point(histogram_matching.cols + 10, 25), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255,255,255), 1);
+	std::string _template_label_text(" Template: ");
+	_template_label_text.append(template_label.name);
+	cv::putText(image_to_draw, _template_label_text, cv::Point(histogram_matching.cols + 10, label.image.rows + 55), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255,255,255), 1);
+	
+	return false;
+}
 
 
 ///////////////////////// Debugging Functions /////////////////////////

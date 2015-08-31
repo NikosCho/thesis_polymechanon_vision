@@ -80,6 +80,10 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
     else  node.setParam("label_detector/QR_Switch", settings.QR_ENABLED);
 	ROS_INFO("LabelDetectorNodeHandler: [QR DETECTION]-%s ", settings.QR_ENABLED?"ON":"OFF" );
 
+    if (node.getParam("label_detector/QR_Debugging", settings.QR_DBG_ENABLED))  other_settings_loaded = true;
+    else  node.setParam("label_detector/QR_Debugging", settings.QR_DBG_ENABLED);
+    ROS_INFO("LabelDetectorNodeHandler: [QR DEBUGGING]-%s ", settings.QR_DBG_ENABLED?"ON":"OFF" );
+
 	if (node.getParam("label_detector/QR_Canny_par1", settings.QR_CANNY_PAR1))  other_settings_loaded = true;
     else  node.setParam("label_detector/QR_Canny_par1", settings.QR_CANNY_PAR1);
     ROS_INFO("LabelDetectorNodeHandler: [QR_CANNY_PAR1]-%d ", settings.QR_CANNY_PAR1);
@@ -92,6 +96,10 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
 	if (node.getParam("label_detector/HZL_Switch", settings.HZL_ENABLED))  other_settings_loaded = true;
     else  node.setParam("label_detector/HZL_Switch", settings.HZL_ENABLED);
     ROS_INFO("LabelDetectorNodeHandler: [HZL DETECTION]-%s ", settings.HZL_ENABLED?"ON":"OFF" );
+
+    if (node.getParam("label_detector/HZL_Debugging", settings.HZL_DBG_ENABLED))  other_settings_loaded = true;
+    else  node.setParam("label_detector/HZL_Debugging", settings.HZL_DBG_ENABLED);
+    ROS_INFO("LabelDetectorNodeHandler: [HZL DEBUGGING]-%s ", settings.HZL_DBG_ENABLED?"ON":"OFF" );
 
 	if (node.getParam("label_detector/Hzl_Canny_par1", settings.HZL_CANNY_PAR1))  other_settings_loaded = true;
     else  node.setParam("label_detector/Hzl_Canny_par1", settings.HZL_CANNY_PAR1);
@@ -120,12 +128,14 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
 void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level)
 {	
 	DetectorSettings settings;
-    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[QR_CANNY_PAR1]-%d \n\t[QR_CANNY_PAR2]-%d \n\t[HZL DETECTION]-%s \n\t[HZL_CANNY_PAR1]-%d \n\t[HZL_CANNY_PAR2]-%d \n\t[HZL_MATCHING_METHOD]-%d \n\t[HZL_TEMPLATE_MATCHING_METHOD]-%d \n\t[COLOR_MATCHING]-%s ",
+    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[QR DEBUGGING]-%s \n\t[QR_CANNY_PAR1]-%d \n\t[QR_CANNY_PAR2]-%d \n\t[HZL DETECTION]-%s \n\t[HZL DEBUGGING]-%s \n\t[HZL_CANNY_PAR1]-%d \n\t[HZL_CANNY_PAR2]-%d \n\t[HZL_MATCHING_METHOD]-%d \n\t[HZL_TEMPLATE_MATCHING_METHOD]-%d \n\t[COLOR_MATCHING]-%s ",
                 config.Debugging?"ON":"OFF",
                 config.QR_Switch?"ON":"OFF",
+                config.QR_Debugging?"ON":"OFF",
                 config.QR_Canny_par1,
                 config.QR_Canny_par2,
                 config.HZL_Switch?"ON":"OFF",
+                config.HZL_Debugging?"ON":"OFF",
                 config.Hzl_Canny_par1,
                 config.Hzl_Canny_par2,
                 config.Hzl_matching_method,
@@ -136,11 +146,13 @@ void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfi
     settings.DEBUGGING = config.Debugging;
     // QR CONFIGURATION
     settings.QR_ENABLED = config.QR_Switch;
+    settings.QR_DBG_ENABLED = config.QR_Debugging;
     settings.QR_CANNY_PAR1 = config.QR_Canny_par1;
     settings.QR_CANNY_PAR2 = config.QR_Canny_par2;
 
     // HZL CONFIGURATION
     settings.HZL_ENABLED = config.HZL_Switch;
+    settings.HZL_DBG_ENABLED = config.HZL_Debugging;
     settings.HZL_CANNY_PAR1 = config.Hzl_Canny_par1;
     settings.HZL_CANNY_PAR2 = config.Hzl_Canny_par2;
     settings.HZL_MATCHING_METHOD = config.Hzl_matching_method;

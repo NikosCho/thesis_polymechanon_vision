@@ -33,8 +33,8 @@ public:
 	virtual bool scan();
 	virtual vector<vector<Point2D> > getDetectedLabels();	
 
-	virtual bool setParameters(int par1, int par2);
-	virtual bool setParameters(int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match);
+	virtual bool setParameters(bool debugging, int par1, int par2);
+	virtual bool setParameters(bool debugging, int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match);
 
 
 	///////////////////// Debugging Functions /////////////////////
