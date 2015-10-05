@@ -17,15 +17,7 @@
 #include "label_detector/scanners/c_qr_scanner.h"
 #include "label_detector/scanners/c_hzl_scanner.h"
 
-using std::vector;
-using std::shared_ptr;
-using std::make_shared;
-using std::none_of;
-using std::remove_if;
-
 typedef cv::Point2f Point2D;
-
-
 
 namespace polymechanon_vision {
 
@@ -61,7 +53,7 @@ struct DetectorSettings
 						HZL_CANNY_PAR2(200), 
 						HZL_MATCHING_METHOD(0), 
 						HZL_TEMPLATE_MATCHING_METHOD(4), 
-						ENABLE_COLOR_MATCHING(true){}
+						ENABLE_COLOR_MATCHING(true) {}
 };
 
 class LabelDetector
@@ -78,12 +70,12 @@ public:
 	////////// Test //////////
 	cv::Mat getImageOutput();
 	int getNumberOfDetectedLabels();
-	
+	 
 private:
-	shared_ptr<cv::Mat> _input_image;
+	std::shared_ptr<cv::Mat> _input_image;
 	DetectorSettings _settings;
 	std::vector<polymechanon_vision::Label> _labels;
-	std::vector<vector<Point2D> > _labels_contours;
+	std::vector<std::vector<Point2D> > _labels_contours;
 	std::vector<Scanner*> _scanners;
 
 	// Scanners setup

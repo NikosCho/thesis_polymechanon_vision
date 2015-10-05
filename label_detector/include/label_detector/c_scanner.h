@@ -31,7 +31,8 @@ public:
 	virtual LabelType getType() const;
 	void setImageToScan(const shared_ptr<cv::Mat> input_image);
 	virtual bool scan();
-	virtual vector<vector<Point2D> > getDetectedLabels();	
+	// virtual vector<vector<Point2D> > getDetectedLabels();	
+	virtual std::vector<polymechanon_vision::Label> getDetectedLabels();	
 
 	virtual bool setParameters(bool debugging, int par1, int par2);
 	virtual bool setParameters(bool debugging, int par1, int par2, int side_length, int match_mehod, int template_match_mehod, int contour_area_thres, bool enable_color_match);
@@ -47,7 +48,8 @@ protected:
 	
 private:
 	LabelType _type;
-	vector<vector<Point2D> > _detected_labels;
+	// vector<vector<Point2D> > _detected_labels;
+	vector<polymechanon_vision::Label> _detected_labels;
 
 };
 

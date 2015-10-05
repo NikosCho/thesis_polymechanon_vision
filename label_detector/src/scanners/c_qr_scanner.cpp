@@ -1,5 +1,18 @@
 #include "label_detector/scanners/c_qr_scanner.h"
 
+using std::vector;
+using std::shared_ptr;
+using std::all_of;
+using std::for_each;
+using std::distance;
+using std::rotate;
+using std::max_element;
+using std::pair;
+using std::make_pair;
+
+using std::cout;
+using std::endl;
+
 namespace polymechanon_vision {
 
 QrScanner::QrScanner(shared_ptr<cv::Mat> input_image /* = nullptr */)
@@ -27,7 +40,7 @@ LabelType QrScanner::getType() const
 
 /// 'Main' function of scanner.
 /**
-*	Implementation of whole scanner process.
+*	Implementation of whole scanning process.
 *	
 *	\returns true/false accοording to the progress of scanning (true - if anything was detected,  false - if not).
 *	\exception std::runtime_error - if camera input's pointer is 'nullptr'.
@@ -82,8 +95,10 @@ bool QrScanner::scan()
 		if ( qr_code_vertices.size() == 4 && isContourConvex(qr_code_vertices) ) {
 			std::string message;
 			if ( translate(caminput_gray, qr_code_vertices, message) ) {
-							cout << message << endl;
-				_detected_labels.push_back(qr_code_vertices);
+
+				_detected_labels.push_back(
+					Label(this->_type, message, qr_code_vertices) 
+					);
 			}
 		}
 	}
@@ -94,10 +109,18 @@ bool QrScanner::scan()
 	return true;
 }
 
-vector<vector<Point2D> > QrScanner::getDetectedLabels()
+// vector<vector<Point2D> > QrScanner::getDetectedLabels()
+// {
+// 	return _detected_labels;
+// }
+
+vector<pair<vector<Point2D>, string> > QrScanner::getDetectedLabels()
 {
 	return _detected_labels;
 }
+
+
+
 
 bool QrScanner::setParameters(bool debugging, int par1, int par2)
 {	
@@ -766,7 +789,14 @@ int QrScanner::individualizeTopLeftMarker(vector<QrMarker>& markers)
 	return top_left_marker;
 }
 
-
+/// Individualize top marker, using the length of the lines connecting each pair of them.
+/**
+*	For each pair of markers, calculates the distance. 
+*	The marker tha doesn't belongs to the maximum distance
+*	is the top marker
+*
+*	\returns top marker's id.	
+*/
 int QrScanner::individualizeTopLeftMarkerbyDiagonal(vector<QrMarker>& markers)
 {
 	int top,bottom,right;
@@ -783,6 +813,16 @@ int QrScanner::individualizeTopLeftMarkerbyDiagonal(vector<QrMarker>& markers)
 	return top;
 }
 
+/// Individualize top marker, using the angles composing the triangle between the markers.
+/**
+*	For each pair of markers, calculates the angle between
+*	the lines of the composed triangle. 
+*	The marker tha does belongs to the corner
+*	of the highest angle
+*	is the top marker
+*
+*	\returns top marker's id.	
+*/
 int QrScanner::individualizeTopLeftMarkerbyAngle(vector<QrMarker>& markers)
 {
 	int top,bottom,right;
@@ -833,6 +873,15 @@ void QrScanner::sortMarkersVertices(vector<QrMarker>& markers)
 	}
 }
 
+/// Given a vector of the markers, calculate the fourth corner and return the QR's square.
+/**
+*	Using the top_right and bottom_left markers 
+*	finds the intesection of the lines composed from
+*	the spefific corners. 
+*
+*	\returns a vector of four points.	
+*	\exception std::runtime_error - if input's vector has size other than 3.
+*/
 vector<Point2D> QrScanner::findSquare(const vector<QrMarker>& markers)
 {	
 	if ( markers.size() != 3 )    throw std::runtime_error("[QrScanner]-findSquare() : input's size is not 3. ");
@@ -1404,22 +1453,85 @@ void QrScanner::drawLine(cv::Mat &inputimage, const vector<Point2D>& line,  cv::
         cv::line(inputimage, p, q, color, 2);
 }
 
+// ////////////////////////////////////////// Debugging Functions ////////////////////////////////////////////////////
+
+// bool QrScanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
+// {	
+// 	if ( _detected_labels.size() == 0)    return false;
+
+// 	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+// 		cv::line(*inputimage, label[0], label[1], cv::Scalar(145,255,145), 3);
+// 		cv::line(*inputimage, label[1], label[2], cv::Scalar(145,255,145), 3);
+// 		cv::line(*inputimage, label[2], label[3], cv::Scalar(145,255,145), 3);
+// 		cv::line(*inputimage, label[3], label[0], cv::Scalar(145,255,145), 3);
+
+// 		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
+// 		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
+// 		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(125,125,255), 6);
+// 		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(125,125,255), 6);
+// 	});
+// 	return true;
+// }
+
+// bool QrScanner::drawDetectedLabels(cv::Mat &inputimage)
+// {
+// 	if ( _detected_labels.size() == 0)    return false;
+
+// 	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+// 		cv::line(inputimage, label[0], label[1], cv::Scalar(145,255,145), 2);
+// 		cv::line(inputimage, label[1], label[2], cv::Scalar(145,255,145), 2);
+// 		cv::line(inputimage, label[2], label[3], cv::Scalar(145,255,145), 2);
+// 		cv::line(inputimage, label[3], label[0], cv::Scalar(145,255,145), 2);
+
+// 		// cv::line(inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
+// 		// cv::line(inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
+// 		cv::line(inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(125,125,255), 4);
+// 		cv::line(inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(125,125,255), 4);
+
+// 	});
+// 	return true;
+// }
+
+// cv::Mat QrScanner::getImageOfDetectedLabels(const cv::Mat &inputimage)
+// {	
+// 	cv::Mat image_to_draw = inputimage.clone();
+// 	if ( _detected_labels.size() == 0 )    ROS_WARN("[QrScanner]-drawDetectedLabels(): there are no detected labels.");
+//     else {
+// 		for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+// 			cv::line(image_to_draw, label[0], label[1], cv::Scalar(145,255,145), 2);
+// 			cv::line(image_to_draw, label[1], label[2], cv::Scalar(145,255,145), 2);
+// 			cv::line(image_to_draw, label[2], label[3], cv::Scalar(145,255,145), 2);
+// 			cv::line(image_to_draw, label[3], label[0], cv::Scalar(145,255,145), 2);
+
+// 			// cv::line(image_to_draw, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
+// 			// cv::line(image_to_draw, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
+// 			cv::line(image_to_draw, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(125,125,255), 4);
+// 			cv::line(image_to_draw, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(125,125,255), 4);
+
+// 		});
+// 	}
+// 	return image_to_draw;
+// }
+
 ////////////////////////////////////////// Debugging Functions ////////////////////////////////////////////////////
 
 bool QrScanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
 {	
 	if ( _detected_labels.size() == 0)    return false;
 
-	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
-		cv::line(*inputimage, label[0], label[1], cv::Scalar(145,255,145), 3);
-		cv::line(*inputimage, label[1], label[2], cv::Scalar(145,255,145), 3);
-		cv::line(*inputimage, label[2], label[3], cv::Scalar(145,255,145), 3);
-		cv::line(*inputimage, label[3], label[0], cv::Scalar(145,255,145), 3);
+	// for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+	for_each(begin(_detected_labels), end(_detected_labels), [&](const polymechanon_vision::Label& label) {
+		auto points = get2DPoints(label);
+
+		cv::line(*inputimage, points[0], points[1], cv::Scalar(145,255,145), 3);
+		cv::line(*inputimage, points[1], points[2], cv::Scalar(145,255,145), 3);
+		cv::line(*inputimage, points[2], points[3], cv::Scalar(145,255,145), 3);
+		cv::line(*inputimage, points[3], points[0], cv::Scalar(145,255,145), 3);
 
 		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
 		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
-		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(125,125,255), 6);
-		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(125,125,255), 6);
+		cv::line(*inputimage, points[0],findMiddlePoint(points[0], findMiddlePoint(points[0], points[1])), cv::Scalar(125,125,255), 6);
+		cv::line(*inputimage, points[0],findMiddlePoint(points[0], findMiddlePoint(points[0], points[3])), cv::Scalar(125,125,255), 6);
 	});
 	return true;
 }
@@ -1428,16 +1540,18 @@ bool QrScanner::drawDetectedLabels(cv::Mat &inputimage)
 {
 	if ( _detected_labels.size() == 0)    return false;
 
-	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
-		cv::line(inputimage, label[0], label[1], cv::Scalar(145,255,145), 2);
-		cv::line(inputimage, label[1], label[2], cv::Scalar(145,255,145), 2);
-		cv::line(inputimage, label[2], label[3], cv::Scalar(145,255,145), 2);
-		cv::line(inputimage, label[3], label[0], cv::Scalar(145,255,145), 2);
+	// for_each(begin(_detected_labels), end(_detected_labels), [&](const pair<vector<Point2D>, sting>& label) {
+	for_each(begin(_detected_labels), end(_detected_labels), [&](const polymechanon_vision::Label& label) {
+		auto points = get2DPoints(label);
+		cv::line(inputimage, points[0], points[1], cv::Scalar(145,255,145), 2);
+		cv::line(inputimage, points[1], points[2], cv::Scalar(145,255,145), 2);
+		cv::line(inputimage, points[2], points[3], cv::Scalar(145,255,145), 2);
+		cv::line(inputimage, points[3], points[0], cv::Scalar(145,255,145), 2);
 
 		// cv::line(inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
 		// cv::line(inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
-		cv::line(inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(125,125,255), 4);
-		cv::line(inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(125,125,255), 4);
+		cv::line(inputimage, points[0],findMiddlePoint(points[0], findMiddlePoint(points[0], points[1])), cv::Scalar(125,125,255), 4);
+		cv::line(inputimage, points[0],findMiddlePoint(points[0], findMiddlePoint(points[0], points[3])), cv::Scalar(125,125,255), 4);
 
 	});
 	return true;
@@ -1448,16 +1562,18 @@ cv::Mat QrScanner::getImageOfDetectedLabels(const cv::Mat &inputimage)
 	cv::Mat image_to_draw = inputimage.clone();
 	if ( _detected_labels.size() == 0 )    ROS_WARN("[QrScanner]-drawDetectedLabels(): there are no detected labels.");
     else {
-		for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
-			cv::line(image_to_draw, label[0], label[1], cv::Scalar(145,255,145), 2);
-			cv::line(image_to_draw, label[1], label[2], cv::Scalar(145,255,145), 2);
-			cv::line(image_to_draw, label[2], label[3], cv::Scalar(145,255,145), 2);
-			cv::line(image_to_draw, label[3], label[0], cv::Scalar(145,255,145), 2);
+		// for_each(begin(_detected_labels), end(_detected_labels), [&](const pair<vector<Point2D>, sting>& label) {
+		for_each(begin(_detected_labels), end(_detected_labels), [&](const polymechanon_vision::Label& label) {
+			auto points = get2DPoints(label);
+			cv::line(image_to_draw, points[0], points[1], cv::Scalar(145,255,145), 2);
+			cv::line(image_to_draw, points[1], points[2], cv::Scalar(145,255,145), 2);
+			cv::line(image_to_draw, points[2], points[3], cv::Scalar(145,255,145), 2);
+			cv::line(image_to_draw, points[3], points[0], cv::Scalar(145,255,145), 2);
 
 			// cv::line(image_to_draw, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
 			// cv::line(image_to_draw, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
-			cv::line(image_to_draw, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(125,125,255), 4);
-			cv::line(image_to_draw, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(125,125,255), 4);
+			cv::line(image_to_draw, points[0],findMiddlePoint(points[0], findMiddlePoint(points[0], points[1])), cv::Scalar(125,125,255), 4);
+			cv::line(image_to_draw, points[0],findMiddlePoint(points[0], findMiddlePoint(points[0], points[3])), cv::Scalar(125,125,255), 4);
 
 		});
 	}

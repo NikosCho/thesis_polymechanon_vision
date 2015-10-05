@@ -22,23 +22,7 @@
 // #include "label_detector/c_label_detector.h"
 
 
-using std::vector;
-using std::pair; //?
-using std::make_pair; //?
-using std::shared_ptr;
-using std::all_of;
-using std::for_each;
-using std::distance;
-using std::rotate;
-using std::max_element;
-
-// using std::signbit;
-
-using std::cout;
-using std::endl;
-
 typedef cv::Point ContourPoint;
-// typedef cv::Point2f Point2D;
 // typedef cv::Point2f Point2D;
 
 namespace polymechanon_vision {
@@ -53,10 +37,10 @@ enum class QrOrientation
 
 struct QrMarker 
 {
-	vector<Point2D> contour;
+	std::vector<Point2D> contour;
 	Point2D mass_center;
 	QrMarker() {}
-	QrMarker(const vector<Point2D> contour, const Point2D mass_center): contour(contour), mass_center(mass_center) {}
+	QrMarker(const std::vector<Point2D> contour, const Point2D mass_center): contour(contour), mass_center(mass_center) {}
 };
 
 
@@ -70,7 +54,9 @@ public:
 	LabelType getType() const;
 	/* void setImageToScan(const shared_ptr<cv::Mat> input_image); */
 	bool scan();
-	vector<vector<Point2D> > getDetectedLabels();
+	// std::vector<std::vector<Point2D> > getDetectedLabels();
+	// std::vector<std::pair<std::vector<Point2D>, std::string> > getDetectedLabels();
+	std::vector<polymechanon_vision::Label> getDetectedLabels();
 
 	bool setParameters(bool debugging, int par1, int par2);
 
@@ -83,7 +69,10 @@ public:
 private:
 	/* shared_ptr<cv::Mat> _image_to_scan */ 
 	static const LabelType _type = LabelType::QRCODE;
-	vector<vector<Point2D> > _detected_labels;
+	// std::vector<std::vector<Point2D> > _detected_labels;
+	// std::vector<std::pair<std::vector<Point2D>, std::string> > _detected_labels;
+	// std::vector<Label> _labels_detected;
+	std::vector<polymechanon_vision::Label> _labels_detected;
 
 	zbar::ImageScanner scanner_;
 
@@ -91,25 +80,25 @@ private:
 	int _canny_param2;
 	bool _debugging;
 
-	vector<QrMarker> qr_markers_;
+	std::vector<QrMarker> qr_markers_;
 
 	cv::Mat _testing_image;
 
 	// Scanning functions
-	vector<vector<ContourPoint> > findAlignmentMarkers(const cv::Mat& image);
-	vector<Point2D> findContoursMassCenters(const vector<vector<ContourPoint> >& contours_vector);
-	vector<vector<int> > clusterMarkers(const vector<Point2D>& contours_mass_centers);
-	vector<Point2D> getMassCenters(const vector<int>& contours_by_id, const vector<Point2D>& mass_centers);
-	vector<vector<ContourPoint> > getContours(const vector<int>& contours_by_id, const vector<vector<ContourPoint> >& contours);
-	vector<QrMarker> getMarkers(const vector<int>& contours_by_id, const vector<vector<ContourPoint> >& contours, const vector<Point2D>& mass_centers);
-	bool sortMarkers(vector<QrMarker>& markers);
-	int individualizeTopLeftMarker(vector<QrMarker>& markers);
-	int individualizeTopLeftMarkerbyDiagonal(vector<QrMarker>& markers);
-	int individualizeTopLeftMarkerbyAngle(vector<QrMarker>& markers);
-	void sortMarkersVertices(vector<QrMarker>& markers);
-	vector<Point2D> findSquare(const vector<QrMarker>& markers);
-	// std::string translate(const cv::Mat &gray_input_image,const vector<Point2D>& qr_vertices);
-	bool translate(const cv::Mat &gray_input_image,const vector<Point2D>& qr_vertices, std::string& message);
+	std::vector<std::vector<ContourPoint> > findAlignmentMarkers(const cv::Mat& image);
+	std::vector<Point2D> findContoursMassCenters(const std::vector<std::vector<ContourPoint> >& contours_vector);
+	std::vector<std::vector<int> > clusterMarkers(const std::vector<Point2D>& contours_mass_centers);
+	std::vector<Point2D> getMassCenters(const std::vector<int>& contours_by_id, const std::vector<Point2D>& mass_centers);
+	std::vector<std::vector<ContourPoint> > getContours(const std::vector<int>& contours_by_id, const std::vector<std::vector<ContourPoint> >& contours);
+	std::vector<QrMarker> getMarkers(const std::vector<int>& contours_by_id, const std::vector<std::vector<ContourPoint> >& contours, const std::vector<Point2D>& mass_centers);
+	bool sortMarkers(std::vector<QrMarker>& markers);
+	int individualizeTopLeftMarker(std::vector<QrMarker>& markers);
+	int individualizeTopLeftMarkerbyDiagonal(std::vector<QrMarker>& markers);
+	int individualizeTopLeftMarkerbyAngle(std::vector<QrMarker>& markers);
+	void sortMarkersVertices(std::vector<QrMarker>& markers);
+	std::vector<Point2D> findSquare(const std::vector<QrMarker>& markers);
+	// std::string translate(const cv::Mat &gray_input_image,const std::vector<Point2D>& qr_vertices);
+	bool translate(const cv::Mat &gray_input_image,const std::vector<Point2D>& qr_vertices, std::string& message);
 
 	template<typename Ta, typename Tb>
 	double calculateDistance(const Ta& point1, const Tb& point2);
@@ -118,31 +107,31 @@ private:
 	template<typename T>
 	double calculateSlope(const T& pointA, const T& pointB);
 	template<typename T>
-	double calculateSlope(const vector<T>& line);
+	double calculateSlope(const std::vector<T>& line);
 	template<typename T>
 	double calculateAngle(const T& pointA, const T& pointB, const T& pointC);
 	template<typename T>
-	T findIntersection(const vector<T>& lineA, const vector<T>& lineB);
+	T findIntersection(const std::vector<T>& lineA, const std::vector<T>& lineB);
 	template<typename T, typename Tc>
 	void calculateCoefficients(const T& pointA, const T& pointB, Tc &a, Tc &b, Tc &c);
 	template<typename T, typename Tc>
-	void calculateCoefficients(const vector<T>& line, Tc &a, Tc &b, Tc &c);
+	void calculateCoefficients(const std::vector<T>& line, Tc &a, Tc &b, Tc &c);
 	template<typename T>
 	T findProjection(const T& point, const T& point_of_lineA, const T& point_of_lineB);
 	template<typename T>
-	bool pointLiesBetweenLines(const T& point, vector<T> lineA, vector<T> lineB);
+	bool pointLiesBetweenLines(const T& point, std::vector<T> lineA, std::vector<T> lineB);
 
 	// TEST ////////////
 
 	cv::Scalar randomColor();
-	void drawContours(cv::Mat &inputimage, const vector<vector<ContourPoint> >& contours );
-	void drawMassCenters(cv::Mat &inputimage, const vector<Point2D>& mass_centers );
-	void drawMarkerVertices(cv::Mat &inputimage, const vector<QrMarker>& markers );
-	void drawVertices(cv::Mat &inputimage, const vector<Point2D>& vertices );
-	void drawLines(cv::Mat &inputimage, const vector<QrMarker>& markers );
-	void drawLine(shared_ptr<cv::Mat> inputimage, const vector<Point2D>& line, cv::Scalar color );
-	void drawLine(cv::Mat &inputimage, const vector<Point2D>& line, cv::Scalar color );
-	void drawSquare(cv::Mat &inputimage, const vector<Point2D>& vertices, const vector<ContourPoint>& top_marker);
+	void drawContours(cv::Mat &inputimage, const std::vector<std::vector<ContourPoint> >& contours );
+	void drawMassCenters(cv::Mat &inputimage, const std::vector<Point2D>& mass_centers );
+	void drawMarkerVertices(cv::Mat &inputimage, const std::vector<QrMarker>& markers );
+	void drawVertices(cv::Mat &inputimage, const std::vector<Point2D>& vertices );
+	void drawLines(cv::Mat &inputimage, const std::vector<QrMarker>& markers );
+	void drawLine(shared_ptr<cv::Mat> inputimage, const std::vector<Point2D>& line, cv::Scalar color );
+	void drawLine(cv::Mat &inputimage, const std::vector<Point2D>& line, cv::Scalar color );
+	void drawSquare(cv::Mat &inputimage, const std::vector<Point2D>& vertices, const std::vector<ContourPoint>& top_marker);
 	///////////////////
 };
 

@@ -19,8 +19,18 @@ Python: cv.ContourArea(contour, slice=CV_WHOLE_SEQ) → float
         contour – Input vector of 2D points (contour vertices), stored in std::vector or Mat.
         oriented – Oriented area flag. If it is true, the function returns a signed area value, depending on the contour orientation (clockwise or counter-clockwise). Using this feature you can determine orientation of a contour by taking the sign of an area. By default, the parameter is false, which means that the absolute value is returned.
 
-
+ 
 */
+
+using std::shared_ptr;
+using std::vector;
+
+using std::cout;
+using std::endl;
+using std::string;
+
+
+
 namespace polymechanon_vision {
 
 HzlScanner::HzlScanner(shared_ptr<cv::Mat> input_image /* = nullptr */)
@@ -141,9 +151,11 @@ bool HzlScanner::scan()
 
 			drawDebugging(TEST_TEST, debugging_image, label, _labels_templates[label.match] );
 
-
-			_detected_labels.push_back(label.contour);
-			_labels.push_back(label);
+			_detected_labels.push_back(
+				Label(this->_type, message, label.contour) 
+				);
+			// _detected_labels.push_back(label.contour);
+			// _labels.push_back(label);
 		} 
 		// else 
 		// ROS_INFO(" ---- NO MATCH");
@@ -790,29 +802,57 @@ bool HzlScanner::drawDebugging(cv::Mat& image_to_draw, cv::Mat& histogram_matchi
 
 
 ///////////////////////// Debugging Functions /////////////////////////
+// bool HzlScanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
+// {	
+// 	if ( _detected_labels.size() == 0)    return false;
+
+// 	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
+// 		cv::line(*inputimage, label[0], label[1], cv::Scalar(0,255,255), 3);
+// 		cv::line(*inputimage, label[1], label[2], cv::Scalar(0,255,255), 3);
+// 		cv::line(*inputimage, label[2], label[3], cv::Scalar(0,255,255), 3);
+// 		cv::line(*inputimage, label[3], label[0], cv::Scalar(0,255,255), 3);
+
+// 		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
+// 		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
+// 		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(0,0,0), 6);
+// 		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(0,0,0), 6);
+
+// 		cv::line(*inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[0])), cv::Scalar(0,0,0), 6);
+// 		cv::line(*inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[2])), cv::Scalar(0,0,0), 6);
+
+// 		cv::line(*inputimage, label[2],findMiddlePoint(label[2], findMiddlePoint(label[2], label[1])), cv::Scalar(0,0,0), 6);
+// 		cv::line(*inputimage, label[2],findMiddlePoint(label[2], findMiddlePoint(label[2], label[3])), cv::Scalar(0,0,0), 6);
+
+// 		cv::line(*inputimage, label[3],findMiddlePoint(label[3], findMiddlePoint(label[3], label[0])), cv::Scalar(0,0,0), 6);
+// 		cv::line(*inputimage, label[3],findMiddlePoint(label[3], findMiddlePoint(label[3], label[2])), cv::Scalar(0,0,0), 6);
+// 	});
+// 	return true;
+// }
+
 bool HzlScanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
 {	
 	if ( _detected_labels.size() == 0)    return false;
 
-	for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
-		cv::line(*inputimage, label[0], label[1], cv::Scalar(0,255,255), 3);
-		cv::line(*inputimage, label[1], label[2], cv::Scalar(0,255,255), 3);
-		cv::line(*inputimage, label[2], label[3], cv::Scalar(0,255,255), 3);
-		cv::line(*inputimage, label[3], label[0], cv::Scalar(0,255,255), 3);
+	for_each(begin(_detected_labels), end(_detected_labels), [&](const polymechanon_vision::Label& label) {
+		auto points = get2DPoints(label);
+		cv::line(*inputimage, points[0], points[1], cv::Scalar(0,255,255), 3);
+		cv::line(*inputimage, points[1], points[2], cv::Scalar(0,255,255), 3);
+		cv::line(*inputimage, points[2], points[3], cv::Scalar(0,255,255), 3);
+		cv::line(*inputimage, points[3], points[0], cv::Scalar(0,255,255), 3);
 
-		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[0]), cv::Scalar(125,125,255), 4);
-		// cv::line(*inputimage, label[1], findMiddlePoint(label[1], label[2]), cv::Scalar(125,125,255), 4);
-		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[1])), cv::Scalar(0,0,0), 6);
-		cv::line(*inputimage, label[0],findMiddlePoint(label[0], findMiddlePoint(label[0], label[3])), cv::Scalar(0,0,0), 6);
+		// cv::line(*inputimage, points[1], findMiddlePoint(points[1], points[0]), cv::Scalar(125,125,255), 4);
+		// cv::line(*inputimage, points[1], findMiddlePoint(points[1], points[2]), cv::Scalar(125,125,255), 4);
+		cv::line(*inputimage, points[0],findMiddlePoint(points[0], findMiddlePoint(points[0], points[1])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, points[0],findMiddlePoint(points[0], findMiddlePoint(points[0], points[3])), cv::Scalar(0,0,0), 6);
 
-		cv::line(*inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[0])), cv::Scalar(0,0,0), 6);
-		cv::line(*inputimage, label[1],findMiddlePoint(label[1], findMiddlePoint(label[1], label[2])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, points[1],findMiddlePoint(points[1], findMiddlePoint(points[1], points[0])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, points[1],findMiddlePoint(points[1], findMiddlePoint(points[1], points[2])), cv::Scalar(0,0,0), 6);
 
-		cv::line(*inputimage, label[2],findMiddlePoint(label[2], findMiddlePoint(label[2], label[1])), cv::Scalar(0,0,0), 6);
-		cv::line(*inputimage, label[2],findMiddlePoint(label[2], findMiddlePoint(label[2], label[3])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, points[2],findMiddlePoint(points[2], findMiddlePoint(points[2], points[1])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, points[2],findMiddlePoint(points[2], findMiddlePoint(points[2], points[3])), cv::Scalar(0,0,0), 6);
 
-		cv::line(*inputimage, label[3],findMiddlePoint(label[3], findMiddlePoint(label[3], label[0])), cv::Scalar(0,0,0), 6);
-		cv::line(*inputimage, label[3],findMiddlePoint(label[3], findMiddlePoint(label[3], label[2])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, points[3],findMiddlePoint(points[3], findMiddlePoint(points[3], points[0])), cv::Scalar(0,0,0), 6);
+		cv::line(*inputimage, points[3],findMiddlePoint(points[3], findMiddlePoint(points[3], points[2])), cv::Scalar(0,0,0), 6);
 	});
 	return true;
 }

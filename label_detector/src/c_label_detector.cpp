@@ -1,5 +1,13 @@
 #include "label_detector/c_label_detector.h"
 
+using std::vector;
+using std::shared_ptr;
+using std::make_shared;
+using std::none_of;
+using std::remove_if;
+
+using std::string;
+
 namespace polymechanon_vision {
 
 LabelDetector::LabelDetector()
@@ -65,7 +73,9 @@ bool LabelDetector::detect()
 		cv::namedWindow(debugging_window, cv::WINDOW_AUTOSIZE);  // WINDOW_NORMAL,  WINDOW_AUTOSIZE,  WINDOW_OPENGL
 	}
 
-	_labels_contours.clear();	
+	// vector<Label> detected_labels;
+	// _labels_contours.clear();	
+	_labels.clear();
 
 	setupScanners();
 	if(!_scanners.empty())
@@ -75,13 +85,19 @@ bool LabelDetector::detect()
 		scanner->setImageToScan(_input_image);
 		// scanner->setParameters(_settings);
 		if ( scanner->scan() ) {
-			if (_settings.DEBUGGING )    scanner->drawDetectedLabels(_input_image);
-			std::vector<vector<Point2D> > detected_labels_contours = scanner->getDetectedLabels();
-			cout << "WUT WUT " << detected_labels_contours.size();
+			if (_settings.DEBUGGING )    
+				scanner->drawDetectedLabels(_input_image);
+			
+			vector<Label> detected_labels = scanner->getDetectedLabels();
+			_labels.insert(end(_labels), begin(detected_labels), end(detected_labels));
 
+
+			// vector<vector<Point2D> > detected_labels_contours = scanner->getDetectedLabels();
+			// // _labels_contours.insert(end(_labels_contours), begin(detected_labels_contours), end(detected_labels_contours));
 			// _labels_contours.insert(end(_labels_contours), begin(detected_labels_contours), end(detected_labels_contours));
-			_labels_contours.insert(end(_labels_contours), begin(detected_labels_contours), end(detected_labels_contours));
 
+			// vector<Label> scanned_labels = scanner->getDetectedLabels();
+			// detected_labels.insert(end(detected_labels), begin(detected_labels_contours), end(detected_labels_contours));
 
 		}
 
