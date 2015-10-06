@@ -151,8 +151,10 @@ bool HzlScanner::scan()
 
 			drawDebugging(TEST_TEST, debugging_image, label, _labels_templates[label.match] );
 
+			std::string message =  _labels_templates[label.match].name;
 			_detected_labels.push_back(
-				Label(this->_type, message, label.contour) 
+				// Label(this->_type, message, label.contour) 
+				Label(LabelType::HZL, message, label.contour) 
 				);
 			// _detected_labels.push_back(label.contour);
 			// _labels.push_back(label);
@@ -215,7 +217,7 @@ bool HzlScanner::scan()
 
 
 
-vector<vector<Point2D> > HzlScanner::getDetectedLabels()
+vector<polymechanon_vision::Label> HzlScanner::getDetectedLabels()
 {	
 	return _detected_labels;
 }
@@ -462,10 +464,10 @@ bool HzlScanner::matchLabel(HzlLabel& label)
 		match_value = *max_it;
 
 		// if ( match_value > .0) {    // NOT_IMPLEMENTED
-			ROS_WARN(" matched");
+			// ROS_WARN(" matched");
 			label.matched = true;
     		label.match = match_id;
-			ROS_ERROR("MATCH -- %s - %d ", _labels_templates[label.match].name.c_str() ,label.match);
+			// ROS_ERROR("MATCH -- %s - %d ", _labels_templates[label.match].name.c_str() ,label.match);
     		label.confidence = match_value;    // NOT_IMPLEMENTED
 		// } else    label.matched = false;
 
@@ -834,7 +836,8 @@ bool HzlScanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
 	if ( _detected_labels.size() == 0)    return false;
 
 	for_each(begin(_detected_labels), end(_detected_labels), [&](const polymechanon_vision::Label& label) {
-		auto points = get2DPoints(label);
+		// auto points = get2DPoints(label);
+		vector<Point2D> points = label.get2DPoints();
 		cv::line(*inputimage, points[0], points[1], cv::Scalar(0,255,255), 3);
 		cv::line(*inputimage, points[1], points[2], cv::Scalar(0,255,255), 3);
 		cv::line(*inputimage, points[2], points[3], cv::Scalar(0,255,255), 3);

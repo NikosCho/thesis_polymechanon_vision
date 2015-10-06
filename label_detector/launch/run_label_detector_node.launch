@@ -33,7 +33,7 @@
         	<param name="Hzl_matching_method" value="0" />      
         	<param name="Hzl_template_matching_method" value="4" />      
         	<param name="Hzl_enable_color_matching" value="true" />      
-
+			<param name="Loc_Debugging" value="false" />
         	<param name="Localizing_method" value="0" />      
         	
 		</node>

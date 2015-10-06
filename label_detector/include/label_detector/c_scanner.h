@@ -49,7 +49,7 @@ protected:
 private:
 	LabelType _type;
 	// vector<vector<Point2D> > _detected_labels;
-	vector<polymechanon_vision::Label> _detected_labels;
+	// vector<polymechanon_vision::Label> _detected_labels;
 
 };
 

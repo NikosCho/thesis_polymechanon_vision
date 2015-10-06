@@ -17,7 +17,10 @@
 #include "label_detector/scanners/c_qr_scanner.h"
 #include "label_detector/scanners/c_hzl_scanner.h"
 
+#include "label_detector/c_locator.h"
+
 typedef cv::Point2f Point2D;
+typedef cv::Point3f Point3D;
 
 namespace polymechanon_vision {
 
@@ -40,6 +43,11 @@ struct DetectorSettings
 	int HZL_MATCHING_METHOD;	
 	int HZL_TEMPLATE_MATCHING_METHOD;	
 	bool ENABLE_COLOR_MATCHING; 
+	int HZLSIDE_LENGTH;		// milimeters
+
+	// Localizing parameters
+	bool LOC_DBG_ENABLED;
+	int LOCALIZING_METHOD;
 
 	DetectorSettings(): DEBUGGING(true), 
 						QR_ENABLED(true), 
@@ -53,7 +61,11 @@ struct DetectorSettings
 						HZL_CANNY_PAR2(200), 
 						HZL_MATCHING_METHOD(0), 
 						HZL_TEMPLATE_MATCHING_METHOD(4), 
-						ENABLE_COLOR_MATCHING(true) {}
+						ENABLE_COLOR_MATCHING(true), 
+						HZLSIDE_LENGTH(182), 
+						LOC_DBG_ENABLED(false),
+						LOCALIZING_METHOD(0)
+						{}
 };
 
 class LabelDetector
@@ -77,6 +89,7 @@ private:
 	std::vector<polymechanon_vision::Label> _labels;
 	std::vector<std::vector<Point2D> > _labels_contours;
 	std::vector<Scanner*> _scanners;
+	Locator _locator;
 
 	// Scanners setup
 	void setupScanners();
@@ -85,6 +98,7 @@ private:
 
 	////////// Debugging //////////
 	void drawInfo();
+	vector< Point3D > find3DCoordinates(Label& label);
 
 
 };

@@ -10,7 +10,7 @@ Label::Label()
 	_is_distinctive = false;
 }
 
-Label::Label(LabelType& type, string& text, vector<Point2D>& points2D)
+Label::Label(const LabelType& type, string& text, vector<Point2D>& points2D)
 {
 	setType(type);
 	setText(text);
@@ -50,7 +50,7 @@ int Label::getID() const
 		throw std::runtime_error("[Label]-getID() : label has no id. Use 'setID()' first.");
 }
 
-void Label::setType(LabelType& type)
+void Label::setType(const LabelType& type)
 {	
 	switch( type )
 	{

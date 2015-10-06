@@ -26,13 +26,13 @@ class Label
 public:
 
 	Label();
-	Label(LabelType& type, std::string& text, std::vector<Point2D>& points2D);
+	Label(const LabelType& type, std::string& text, std::vector<Point2D>& points2D);
 	~Label();
 
 	int setID();
 	int getID() const;
 
-	void setType(LabelType& type);
+	void setType(const LabelType& type);
 	LabelType getType() const;
 
 	void setText(std::string& label);

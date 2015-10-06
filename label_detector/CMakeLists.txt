@@ -65,6 +65,7 @@ add_executable(label_detector_node
     src/c_scanner.cpp
     src/scanners/c_qr_scanner.cpp
     src/scanners/c_hzl_scanner.cpp
+    src/c_locator.cpp
     )
 
 target_link_libraries( label_detector_node ${catkin_LIBRARIES})

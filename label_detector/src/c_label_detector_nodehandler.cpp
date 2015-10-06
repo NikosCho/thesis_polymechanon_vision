@@ -121,14 +121,48 @@ void LabelDetectorNodeHandler::loadDetectorSettings(const ros::NodeHandle& node)
     else  node.setParam("label_detector/Hzl_enable_color_matching", settings.ENABLE_COLOR_MATCHING);
     ROS_INFO("LabelDetectorNodeHandler: [COLOR_MATCHING]-%s ", settings.ENABLE_COLOR_MATCHING?"ON":"OFF" );
 
+    if (node.getParam("label_detector/Loc_Debugging", settings.ENABLE_COLOR_MATCHING))  other_settings_loaded = true;
+    else  node.setParam("label_detector/Loc_Debugging", settings.ENABLE_COLOR_MATCHING);
+    ROS_INFO("LabelDetectorNodeHandler: [COLOR_MATCHING]-%s ", settings.ENABLE_COLOR_MATCHING?"ON":"OFF" );
+
+    if (node.getParam("label_detector/Loc_Debugging", settings.LOC_DBG_ENABLED))  other_settings_loaded = true;
+    else  node.setParam("label_detector/Loc_Debugging", settings.LOC_DBG_ENABLED);
+    ROS_INFO("LabelDetectorNodeHandler: [LOCALIZING DEBUGGING]-%s ", settings.LOC_DBG_ENABLED?"ON":"OFF" );
+
+    if (node.getParam("label_detector/QR_side_legth", settings.QRSIDE_LENGTH))  other_settings_loaded = true;
+    else  node.setParam("label_detector/QR_side_legth", settings.QRSIDE_LENGTH);
+    ROS_INFO("LabelDetectorNodeHandler: [QR_SIDE_LENGTH]-%d ", settings.QRSIDE_LENGTH);
+
+    if (node.getParam("label_detector/HZL_side_legth", settings.HZLSIDE_LENGTH))  other_settings_loaded = true;
+    else  node.setParam("label_detector/HZL_side_legth", settings.HZLSIDE_LENGTH);
+    ROS_INFO("LabelDetectorNodeHandler: [HZL_SIDE_LENGTH]-%d ", settings.HZLSIDE_LENGTH);
+
     if (other_settings_loaded)  _detector.setSettings(settings);
 }
 
 // Dynamic reconfigure using command line reconfiguration or rqt-plugin
 void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level)
 {	
+
+    // ROS_INFO("LabelDetector -- Reconfigure Request: 
+    //                     \n\t[DEBUGGING]-%s 
+    //                     \n\t[QR DETECTION]-%s 
+    //                     \n\t[QR DEBUGGING]-%s 
+    //                     \n\t[QR_CANNY_PAR1]-%d 
+    //                     \n\t[QR_CANNY_PAR2]-%d 
+    //                     \n\t[HZL DETECTION]-%s 
+    //                     \n\t[HZL DEBUGGING]-%s 
+    //                     \n\t[HZL_CANNY_PAR1]-%d 
+    //                     \n\t[HZL_CANNY_PAR2]-%d 
+    //                     \n\t[HZL_MATCHING_METHOD]-%d 
+    //                     \n\t[HZL_TEMPLATE_MATCHING_METHOD]-%d 
+    //                     \n\t[COLOR_MATCHING]-%s 
+    //                     \n\t[LOC DEBUGGING]-%s 
+    //                     \n\t[LOC_METHOD]-%d ",
+
+
 	DetectorSettings settings;
-    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[QR DEBUGGING]-%s \n\t[QR_CANNY_PAR1]-%d \n\t[QR_CANNY_PAR2]-%d \n\t[HZL DETECTION]-%s \n\t[HZL DEBUGGING]-%s \n\t[HZL_CANNY_PAR1]-%d \n\t[HZL_CANNY_PAR2]-%d \n\t[HZL_MATCHING_METHOD]-%d \n\t[HZL_TEMPLATE_MATCHING_METHOD]-%d \n\t[COLOR_MATCHING]-%s ",
+    ROS_INFO("LabelDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR DETECTION]-%s \n\t[QR DEBUGGING]-%s  \n\t[QR_CANNY_PAR1]-%d \n\t[QR_CANNY_PAR2]-%d \n\t[HZL DETECTION]-%s \n\t[HZL DEBUGGING]-%s \n\t[HZL_CANNY_PAR1]-%d \n\t[HZL_CANNY_PAR2]-%d \n\t[HZL_MATCHING_METHOD]-%d \n\t[HZL_TEMPLATE_MATCHING_METHOD]-%d \n\t[COLOR_MATCHING]-%s \n\t[LOC DEBUGGING]-%s \n\t[LOC_METHOD]-%d \n\t[QR SIDE LENGTH]-%d \n\t[HZL SIDE LENGTH]-%d ",
                 config.Debugging?"ON":"OFF",
                 config.QR_Switch?"ON":"OFF",
                 config.QR_Debugging?"ON":"OFF",
@@ -140,7 +174,11 @@ void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfi
                 config.Hzl_Canny_par2,
                 config.Hzl_matching_method,
                 config.Hzl_template_matching_method,
-                config.Hzl_enable_color_matching?"ON":"OFF"
+                config.Hzl_enable_color_matching?"ON":"OFF",
+                config.Loc_Debugging?"ON":"OFF",
+                config.Localizing_method,
+                config.QR_side_legth,
+                config.HZL_side_legth
                 );
 
     settings.DEBUGGING = config.Debugging;
@@ -158,6 +196,10 @@ void LabelDetectorNodeHandler::dynRecCallback(label_detector::LabelDetectorConfi
     settings.HZL_MATCHING_METHOD = config.Hzl_matching_method;
     settings.HZL_TEMPLATE_MATCHING_METHOD = config.Hzl_template_matching_method;
     settings.ENABLE_COLOR_MATCHING = config.Hzl_enable_color_matching;
+    settings.LOC_DBG_ENABLED = config.Loc_Debugging;
+    settings.LOCALIZING_METHOD = config.Localizing_method;
+    settings.QRSIDE_LENGTH = config.QR_side_legth;
+    settings.HZLSIDE_LENGTH = config.HZL_side_legth;
 
     _detector.setSettings(settings);
 }

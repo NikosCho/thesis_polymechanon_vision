@@ -72,7 +72,7 @@ private:
 	// std::vector<std::vector<Point2D> > _detected_labels;
 	// std::vector<std::pair<std::vector<Point2D>, std::string> > _detected_labels;
 	// std::vector<Label> _labels_detected;
-	std::vector<polymechanon_vision::Label> _labels_detected;
+	std::vector<polymechanon_vision::Label> _detected_labels;
 
 	zbar::ImageScanner scanner_;
 

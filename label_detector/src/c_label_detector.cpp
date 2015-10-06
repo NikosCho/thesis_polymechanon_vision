@@ -1,12 +1,15 @@
 #include "label_detector/c_label_detector.h"
 
 using std::vector;
+using std::for_each;
 using std::shared_ptr;
 using std::make_shared;
 using std::none_of;
 using std::remove_if;
 
 using std::string;
+using std::cout;
+using std::endl;
 
 namespace polymechanon_vision {
 
@@ -43,6 +46,8 @@ void LabelDetector::setSettings(DetectorSettings& settings)
 		}
 
 	}
+
+	_locator.setParameters( _settings.LOC_DBG_ENABLED, _settings.LOCALIZING_METHOD);
 
 }
 
@@ -88,7 +93,7 @@ bool LabelDetector::detect()
 			if (_settings.DEBUGGING )    
 				scanner->drawDetectedLabels(_input_image);
 			
-			vector<Label> detected_labels = scanner->getDetectedLabels();
+			vector<polymechanon_vision::Label> detected_labels = scanner->getDetectedLabels();
 			_labels.insert(end(_labels), begin(detected_labels), end(detected_labels));
 
 
@@ -105,6 +110,19 @@ bool LabelDetector::detect()
 
 	}
 
+	for (int i = 0; i < _labels.size(); i++)
+		find3DCoordinates(_labels[i]);
+
+
+	// for_each( begin(_labels), end(_labels), [] (const polymechanon_vision::Label& label) {
+	// 		cout << label.getText() << endl;
+	// 		find3DCoordinates(label);
+
+	// });	
+
+	// for_each( begin(_labels), end(_labels), [] (const polymechanon_vision::Label& label) {
+	// 		cout << label.getText() << endl;
+	// });
 
 	if ( _settings.DEBUGGING ) {
 		drawInfo();
@@ -113,15 +131,52 @@ bool LabelDetector::detect()
 		cv::destroyAllWindows();
 	}
 
+
+
 	////////////////////////////////////////////////////////////////////////////////////////
 	// DRAW XYZ - - - http://docs.opencv.org/master/d7/d53/tutorial_py_pose.html#gsc.tab=0
 	////////////////////////////////////////////////////////////////////////////////////////
-	if ( _labels_contours.size() <1 )    return false;
+	if ( _labels_contours.size() < 1 )    return false;
 
 	return true;
 }
 
 
+vector< Point3D > LabelDetector::find3DCoordinates(Label& label)
+{	
+	
+	
+	vector<Point2D> points2d = label.get2DPoints();
+	vector<Point3D> points3d;
+	switch(label.getType())
+	{	
+		case LabelType::QRCODE: 
+			points3d = _locator.calculate3DPosition(	points2d,
+														vector<Point3D>{
+															Point3D(0., 0., 0.),
+															Point3D(_settings.QRSIDE_LENGTH,0.,0.),
+															Point3D(_settings.QRSIDE_LENGTH,_settings.QRSIDE_LENGTH,0.),
+															Point3D(0.,_settings.QRSIDE_LENGTH,0.)
+														}
+			);
+			break;
+		case LabelType::HZL: 
+			points3d =  _locator.calculate3DPosition(	points2d,
+														vector<Point3D>{
+															Point3D(0., 0., 0.),
+															Point3D(_settings.HZLSIDE_LENGTH,0.,0.),
+															Point3D(_settings.HZLSIDE_LENGTH,_settings.HZLSIDE_LENGTH,0.),
+															Point3D(0.,_settings.HZLSIDE_LENGTH,0.)
+														}
+			);
+			break;
+		default: 
+			ROS_ERROR("PEOS");
+
+
+	}
+	label.set3DPoints(points3d);
+}
 
 // Setup scanners according to detector's settings.
 // For each scanner's type, create one, if its type is enabled.

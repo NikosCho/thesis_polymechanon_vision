@@ -12,6 +12,7 @@ using std::make_pair;
 
 using std::cout;
 using std::endl;
+using std::string;
 
 namespace polymechanon_vision {
 
@@ -97,7 +98,8 @@ bool QrScanner::scan()
 			if ( translate(caminput_gray, qr_code_vertices, message) ) {
 
 				_detected_labels.push_back(
-					Label(this->_type, message, qr_code_vertices) 
+					// Label(this->_type, message, qr_code_vertices) 
+					Label(LabelType::QRCODE, message, qr_code_vertices) 
 					);
 			}
 		}
@@ -114,7 +116,8 @@ bool QrScanner::scan()
 // 	return _detected_labels;
 // }
 
-vector<pair<vector<Point2D>, string> > QrScanner::getDetectedLabels()
+// vector<pair<vector<Point2D>, string> > QrScanner::getDetectedLabels()
+vector<polymechanon_vision::Label> QrScanner::getDetectedLabels()
 {
 	return _detected_labels;
 }
@@ -632,17 +635,17 @@ int QrScanner::individualizeTopLeftMarker(vector<QrMarker>& markers)
 		// cout << "====== \n checking 0" << endl;
 		if ( mm != 0 && pointLiesBetweenLines(markers[0].mass_center, temp_lineA, temp_lineB) ) {
 			markers_votes[0] = markers_votes[0] + 1;
-			cout << "FIRST line set of [" << mm << "] raised (" << 0 << ") to " << markers_votes[0] << "." << endl;
+			// cout << "FIRST line set of [" << mm << "] raised (" << 0 << ") to " << markers_votes[0] << "." << endl;
 		}
 		// cout << "checking 1" << endl;
 		if ( mm != 1 && pointLiesBetweenLines(markers[1].mass_center, temp_lineA, temp_lineB) ) {
 			markers_votes[1] = markers_votes[1] + 1;		
-			cout << "FIRST line set of [" << mm << "] raised (" << 1 << ") to " << markers_votes[1] << "." << endl;
+			// cout << "FIRST line set of [" << mm << "] raised (" << 1 << ") to " << markers_votes[1] << "." << endl;
 		}
 		// cout << "checking 2" << endl;
 		if ( mm != 2 && pointLiesBetweenLines(markers[2].mass_center, temp_lineA, temp_lineB) ) {
 			markers_votes[2] = markers_votes[2] + 1;
-			cout << "FIRST line set of [" << mm << "] raised (" << 2 << ") to " << markers_votes[2] << "." << endl;
+			// cout << "FIRST line set of [" << mm << "] raised (" << 2 << ") to " << markers_votes[2] << "." << endl;
 		}
 
 		temp_lineA.clear();
@@ -696,17 +699,17 @@ int QrScanner::individualizeTopLeftMarker(vector<QrMarker>& markers)
 		// cout << "checking 0" << endl;
 		if ( mm != 0 && pointLiesBetweenLines(markers[0].mass_center, temp_lineA, temp_lineB) ) {
 			markers_votes[0] = markers_votes[0] + 1;
-			cout << "SECOND line set of [" << mm << "] raised (" << 0 << ") to " << markers_votes[0] << "." << endl;
+			// cout << "SECOND line set of [" << mm << "] raised (" << 0 << ") to " << markers_votes[0] << "." << endl;
 		}
 		// cout << "checking 1" << endl;
 		if ( mm != 1 && pointLiesBetweenLines(markers[1].mass_center, temp_lineA, temp_lineB) ) {
 			markers_votes[1] = markers_votes[1] + 1;		
-			cout << "SECOND line set of [" << mm << "] raised (" << 1 << ") to " << markers_votes[1] << "." << endl;
+			// cout << "SECOND line set of [" << mm << "] raised (" << 1 << ") to " << markers_votes[1] << "." << endl;
 		}
 		// cout << "checking 2" << endl;
 		if ( mm != 2 && pointLiesBetweenLines(markers[2].mass_center, temp_lineA, temp_lineB) ) {
 			markers_votes[2] = markers_votes[2] + 1;
-			cout << "SECOND line set of [" << mm << "] raised (" << 2 << ") to " << markers_votes[2] << "." << endl;
+			// cout << "SECOND line set of [" << mm << "] raised (" << 2 << ") to " << markers_votes[2] << "." << endl;
 		}
 
 	}
@@ -1521,7 +1524,9 @@ bool QrScanner::drawDetectedLabels(shared_ptr<cv::Mat> inputimage)
 
 	// for_each(begin(_detected_labels), end(_detected_labels), [&](const vector<Point2D>& label) {
 	for_each(begin(_detected_labels), end(_detected_labels), [&](const polymechanon_vision::Label& label) {
-		auto points = get2DPoints(label);
+		// auto points = get2DPoints(label);
+		// vector<Point2D> points = Label::get2DPoints(label);
+			vector<Point2D> points = label.get2DPoints();
 
 		cv::line(*inputimage, points[0], points[1], cv::Scalar(145,255,145), 3);
 		cv::line(*inputimage, points[1], points[2], cv::Scalar(145,255,145), 3);
@@ -1542,7 +1547,9 @@ bool QrScanner::drawDetectedLabels(cv::Mat &inputimage)
 
 	// for_each(begin(_detected_labels), end(_detected_labels), [&](const pair<vector<Point2D>, sting>& label) {
 	for_each(begin(_detected_labels), end(_detected_labels), [&](const polymechanon_vision::Label& label) {
-		auto points = get2DPoints(label);
+		// auto points = get2DPoints(label);
+			vector<Point2D> points = label.get2DPoints();
+		// auto points = get2DPoints(label);
 		cv::line(inputimage, points[0], points[1], cv::Scalar(145,255,145), 2);
 		cv::line(inputimage, points[1], points[2], cv::Scalar(145,255,145), 2);
 		cv::line(inputimage, points[2], points[3], cv::Scalar(145,255,145), 2);
@@ -1564,7 +1571,8 @@ cv::Mat QrScanner::getImageOfDetectedLabels(const cv::Mat &inputimage)
     else {
 		// for_each(begin(_detected_labels), end(_detected_labels), [&](const pair<vector<Point2D>, sting>& label) {
 		for_each(begin(_detected_labels), end(_detected_labels), [&](const polymechanon_vision::Label& label) {
-			auto points = get2DPoints(label);
+			// auto points = get2DPoints(label);
+			vector<Point2D> points = label.get2DPoints();
 			cv::line(image_to_draw, points[0], points[1], cv::Scalar(145,255,145), 2);
 			cv::line(image_to_draw, points[1], points[2], cv::Scalar(145,255,145), 2);
 			cv::line(image_to_draw, points[2], points[3], cv::Scalar(145,255,145), 2);

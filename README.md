@@ -1,4 +1,4 @@
-# Rescue Robot packages # ## v.1 ##
+# Rescue Robot packages # 
 Created in the name of [Robotics Club](http://robotics.mech.upatras.gr/), for [Polymechanon](http://robotics.mech.upatras.gr/club/index.php/projects/polymechanon) project. 
 
 All packages need `ROS` and `OpenCV` to be installed. 

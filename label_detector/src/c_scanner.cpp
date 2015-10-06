@@ -33,7 +33,8 @@ bool Scanner::scan()
 // vector<vector<Point2D> > Scanner::getDetectedLabels()
 std::vector<polymechanon_vision::Label> Scanner::getDetectedLabels()
 {	
-	return _detected_labels;
+	vector<polymechanon_vision::Label> detected_labels;
+	return detected_labels;
 }
 
 bool Scanner::setParameters(bool debugging, int par1, int par2)
