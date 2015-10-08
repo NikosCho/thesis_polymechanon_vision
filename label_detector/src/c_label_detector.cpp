@@ -24,6 +24,11 @@ LabelDetector::LabelDetector()
 
 	_3D_points_pub = _node.advertise<visualization_msgs::Marker>("label_detector/label3Dpoints", 1000);
 
+	// transform.setOrigin( tf::Vector3(0.0, 0.0, 0.0) );
+    // transform.setRotation( tf::Quaternion(0, 0, 0, 0) );
+	// _tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "camera_frame"));
+
+
 	ROS_WARN("LabelDetector created!");
 }
 
@@ -293,8 +298,10 @@ void LabelDetector::publish3DCoordinates(Label& label)
 	vector<Point3D> points = label.get3DPoints();
 	visualization_msgs::Marker marker_points, marker_line_strip;
 
+	// _tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "camera_frame"));
 
-	marker_points.header.frame_id = marker_line_strip.header.frame_id = "/camera_frame";
+
+	marker_points.header.frame_id = marker_line_strip.header.frame_id = "camera_frame";
 	marker_points.header.stamp = marker_line_strip.header.stamp = ros::Time::now();
 	marker_points.ns = "points_and_lines";
 	marker_points.action = marker_line_strip.action = visualization_msgs::Marker::ADD;
@@ -371,6 +378,7 @@ void LabelDetector::publish3DCoordinates(Label& label)
 
 	_3D_points_pub.publish(marker_points);
 	_3D_points_pub.publish(marker_line_strip);
+
 
 }
 

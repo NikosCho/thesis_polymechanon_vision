@@ -33,7 +33,6 @@ struct DetectorSettings
 						QR_DBG_ENABLED(false), 
 						QR_CANNY_PAR1(100), 
 						QR_CANNY_PAR2(200), 
-						QRSIDE_LENGTH(182), 
 						HZL_ENABLED(true), 
 						HZL_DBG_ENABLED(false), 
 						HZL_CANNY_PAR1(100), 
@@ -41,9 +40,10 @@ struct DetectorSettings
 						HZL_MATCHING_METHOD(0), 
 						HZL_TEMPLATE_MATCHING_METHOD(4), 
 						ENABLE_COLOR_MATCHING(true), 
-						HZLSIDE_LENGTH(182), 
 						LOC_DBG_ENABLED(false),
-						LOCALIZING_METHOD(0)
+						LOCALIZING_METHOD(0),
+						QRSIDE_LENGTH(182), 
+						HZLSIDE_LENGTH(122) 
 						{}
 };
 

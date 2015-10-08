@@ -23,6 +23,7 @@
 
 #include <visualization_msgs/Marker.h> //for markers in rviz
 
+// #include <tf/transform_broadcaster.h>
 
 namespace polymechanon_vision {
 
@@ -39,6 +40,9 @@ private:
 	image_transport::Subscriber _subscriber_to_img_node;
 	dynamic_reconfigure::Server<label_detector::LabelDetectorConfig> _dyn_rec_server;
 
+	// tf::TransformBroadcaster _tf_broadcaster;
+	// tf::Transform transform;
+
 	ros::Publisher _3D_points_pub;
 
 	std::shared_ptr<cv::Mat> _input_image;
@@ -49,7 +53,7 @@ private:
 
 	// Node's setup
 	void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "camera/image_raw");	
+	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "/usb_camera/image_raw");	
 	void loadDetectorSettings(const ros::NodeHandle& node);
 	void dynRecCallback(label_detector::LabelDetectorConfig &config, uint32_t level);
 	// LabelDetector's setup
