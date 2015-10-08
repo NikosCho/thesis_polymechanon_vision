@@ -1,6 +1,7 @@
 #include "label_detector/c_locator.h"
 
 using std::string;
+using std::shared_ptr;
 using std::vector;
 
 namespace polymechanon_vision {
@@ -23,6 +24,13 @@ Locator::~Locator()
 {
 	ROS_ERROR("New [Locator] deleted!");
 }
+
+void Locator::setTestImage(const shared_ptr<cv::Mat> input_image)
+{	
+	if ( input_image == nullptr )  throw std::runtime_error("[Scanner]-setImageToScan() : image's pointer is nullptr. ");
+	_test_image = (*input_image).clone();
+}
+
 
 vector< Point3D > Locator::calculate3DPosition(const vector<Point2D>& object2Dpoints, const vector<Point3D>& real3Dpoints)
 {
@@ -136,7 +144,7 @@ void Locator::translateCoordinates(const vector<Point2D>& object2Dpoints, const 
 	// //So: M'=RealPoint , R=RotationMatrix , A=CameraMatrix , s=s , m'=PointOnImage , t=tvec
 
 
-	// RealPoint=RotationMatrix.inv()*CameraMatrix.inv()*s*PointOnImage - RotationMatrix.inv()*tvec;//*PointOnImage;
+	// RealPoint=RotationMatrix.inv()*CameraMatrix.inv()*s*PointOnImage - RotationMatrix.inv()*tvec;    //*PointOnImage;
 
 
 
@@ -148,7 +156,7 @@ void Locator::translateCoordinates(const vector<Point2D>& object2Dpoints, const 
 	object3Dpoints[i].z = RealPoint.at<double>(2,0)*(-1);
 	}
 
-
+	// draw3Daxes(cv::Mat& image, vector<Point3D>& corners, vector<Point3D>& corners_axis)
 
 }
 
@@ -254,6 +262,13 @@ double Locator::calculateSlope(const T& pointA, const T& pointB)
 	// return ((double)pointA.y - (double)pointB.y) / ((double)pointA.x - (double)pointB.x);
 }
 
+
+void Locator::draw3Daxes(cv::Mat& image, vector<Point3D>& corners, vector<Point3D>& corners_axis)
+{
+	// cv::line(image, corners[0], corners_axis[0], cv::Scalar(255,0,0), 5);
+	// cv::line(image, corners[1], corners_axis[1], cv::Scalar(255,0,0), 5);
+	// cv::line(image, corners[2], corners_axis[2], cv::Scalar(255,0,0), 5);
+}
 
 
 } // "namespace polymechanon_vision"

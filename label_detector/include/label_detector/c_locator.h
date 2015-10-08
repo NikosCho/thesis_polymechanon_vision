@@ -12,6 +12,7 @@
 
 typedef cv::Point2f Point2D;
 typedef cv::Point3f Point3D;
+using std::shared_ptr;
 
 namespace polymechanon_vision {
 
@@ -30,11 +31,15 @@ public:
 	void set3DPoints(std::vector< Point3D >& points);
 	std::vector< Point3D > get3DPoints() const;
 
+	 void setTestImage(const shared_ptr<cv::Mat> input_image); 
+
+
 private:
 	cv::Mat _camera_matrix;
 	cv::Mat _distortion_matrix;
 	bool _calibration_loaded;
 
+	cv::Mat _test_image;
 
 	bool _debugging;
 	int _localizing_method;
@@ -57,6 +62,9 @@ private:
 	double calculateDistance(const Ta& point1, const Tb& point2);
 	template<typename T>
 	double calculateSlope(const T& pointA, const T& pointB);
+
+	// Debugging 
+	void draw3Daxes(cv::Mat& image, std::vector<Point3D>& corners, std::vector<Point3D>& corners_axis);
 
 };
 

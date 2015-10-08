@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   OpenCV
   cv_bridge
   image_transport
+  geometry_msgs   # svisualization_msgs::Marker
 )
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
@@ -56,9 +57,7 @@ include_directories( include
 # )
 
 add_executable(label_detector_node 
-    src/label_detector_main.cpp
-    src/TEST_c_label_detector_nodehandler.cpp
-    src/c_label_detector_nodehandler.cpp
+    src/label_detector_node.cpp
     src/c_label_detector.cpp
     src/c_label.cpp
     #scanners
@@ -80,16 +79,16 @@ add_dependencies(label_detector_node polymechanon_vision_msgs_gencpp)
 #############
 
 
-file(GLOB_RECURSE TESTS ${PROJECT_SOURCE_DIR}/test/*.cpp)
+# file(GLOB_RECURSE TESTS ${PROJECT_SOURCE_DIR}/test/*.cpp)
 
-foreach(ITEM ${TESTS})
-    get_filename_component(filename ${ITEM} NAME_WE)
-    catkin_add_gtest(${filename} ${ITEM}  src/c_label_detector.cpp
-                                          src/c_label.cpp
-                                          src/c_scanner.cpp
-                                          src/scanners/c_qr_scanner.cpp)
-    target_link_libraries(${filename} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Zbar_INCLUDE_DIR})
-endforeach()
+# foreach(ITEM ${TESTS})
+#     get_filename_component(filename ${ITEM} NAME_WE)
+#     catkin_add_gtest(${filename} ${ITEM}  src/c_label_detector.cpp
+#                                           src/c_label.cpp
+#                                           src/c_scanner.cpp
+#                                           src/scanners/c_qr_scanner.cpp)
+#     target_link_libraries(${filename} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${Zbar_INCLUDE_DIR})
+# endforeach()
 
 
 # catkin_make run_tests_label_detector

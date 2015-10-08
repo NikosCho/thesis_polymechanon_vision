@@ -722,7 +722,7 @@ int QrScanner::individualizeTopLeftMarker(vector<QrMarker>& markers)
 
 
 
-	cout << " VOTES -- " << markers_votes[0] << " , " << markers_votes[1] << " , " << markers_votes[2] << endl;
+	// cout << " VOTES -- " << markers_votes[0] << " , " << markers_votes[1] << " , " << markers_votes[2] << endl;
 
 	std::ostringstream text1;
 	text1 <<  markers_votes[0];

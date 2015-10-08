@@ -86,19 +86,19 @@ void Label::set2DPoints(vector< Point2D >& points)
 	{
 		case LabelType::QRCODE: 
 			if ( points.size() != 4 )
-				throw std::runtime_error("[Label]-setPoints() : invalid size of QR vector.");
+				throw std::runtime_error("[Label]-set2DPoints() : invalid size of QR vector.");
 			_2D_points = points;
 			break;
 		case LabelType::HZL: 
 			if ( points.size() != 4 )
-				throw std::runtime_error("[Label]-setPoints() : invalid size of QR vector.");
+				throw std::runtime_error("[Label]-set2DPoints() : invalid size of QR vector.");
 			_2D_points = points;
 			break;
 		//////////////////////////////////////
 		//// ANY NEW TYPE MUST BE PLACED HERE
 		//////////////////////////////////////
 		default:
-			throw std::runtime_error("[Label]-setPoints() : unknown label's type inserted.");
+			throw std::runtime_error("[Label]-set2DPoints() : unknown label's type inserted.");
 	}
 }
 
@@ -113,19 +113,19 @@ void Label::set3DPoints(vector< Point3D >& points)
 	{
 		case LabelType::QRCODE: 
 			if ( points.size() != 4 )
-				throw std::runtime_error("[Label]-setPoints() : invalid size of QR vector.");
+				throw std::runtime_error("[Label]-set3DPoints() : invalid size of QR vector.");
 			_3D_points = points;
 			break;
 		case LabelType::HZL: 
 			if ( points.size() != 4 )
-				throw std::runtime_error("[Label]-setPoints() : invalid size of HZL vector.");
+				throw std::runtime_error("[Label]-set3DPoints() : invalid size of HZL vector.");
 			_3D_points = points;
 			break;
 		//////////////////////////////////////
 		//// ANY NEW TYPE MUST BE PLACED HERE
 		//////////////////////////////////////
 		default:
-			throw std::runtime_error("[Label]-setPoints() : unknown label's type inserted.");
+			throw std::runtime_error("[Label]-set3DPoints() : unknown label's type inserted.");
 	}
 }
 
