@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node pkg="usb_cam" type="usb_cam_node" name="usb_camera" >
+		<param name="image_width" type="int" value="640" />
+		<param name="image_height" type="int" value="480" />
+		<param name="framerate" type="int" value="120" />
+		<param name="video_device" type="string" value="/dev/video0" />
+		<param name="camera_frame_id" type="string" value="/camera_frame" />
+	</node>
+
+
+	<!-- OBJECT DETECTOR -->
+	<node pkg="victim_detector" type="object_detector_node" name="object_detector" output="screen" >
+		<param name="input_image_topic" type="string" value="/usb_camera/image_raw" />
+		<param name="MIN_object_size" value="100" />
+		<param name="MAX_object_size" value="1000" />
+	</node>
+	<!-- THERMAL DETECTOR -->
+<!-- 	<node pkg="victim_detector" type="thermal_detector_node" name="thermal_detector" output="screen" >
+		<param name="input_image_topic" type="string" value="/usb_camera/image_raw" />
+		<param name="MIN_blob_size" value="100" />
+		<param name="MAX_blob_size" value="1000" />
+	</node> -->
+
+	<!-- MOTION DETECTOR -->
+<!-- 	<node pkg="victim_detector" type="motion_detector_node" name="motion_detector" output="screen" >
+		<param name="input_image_topic" type="string" value="/usb_camera/image_raw" />
+		<param name="Detection_mode" value="0" />
+	</node> -->
+
+	<!-- RQT -->
+	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" />
+
+</launch>
+
+
+
+<!-- 	<group ns="label_detector">
+	</group> -->

@@ -386,7 +386,7 @@ void LabelDetector::publish3DCoordinates(Label& label)
 
 // Load image input topic's name from parameter server.
 // If there is no topic's name on server, take the function's paramteter.
-std::string LabelDetector::loadTopic(const ros::NodeHandle& node, std::string topic_name /* = "camera/image_raw" */ ) 
+std::string LabelDetector::loadTopic(const ros::NodeHandle& node, std::string topic_name /* = "/usb_camera/image_raw" */ ) 
 {	
 	std::string topic_param_name("label_detector/input_image_topic");
 

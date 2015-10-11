@@ -8,7 +8,63 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  dynamic_reconfigure
+  OpenCV
+  cv_bridge
+  image_transport
 )
+
+
+set(PACKAGE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(${PROJECT_SOURCE_DIR}/config/config_PP.h.in ${PROJECT_SOURCE_DIR}/include/victim_detector/config_PP.h)
+
+generate_dynamic_reconfigure_options(
+  dyn_cfg/ObjectDetector.cfg
+  dyn_cfg/MotionDetector.cfg
+  dyn_cfg/ThermalDetector.cfg
+)
+
+catkin_package(
+  INCLUDE_DIRS include
+#  LIBRARIES test_package
+#  CATKIN_DEPENDS roscpp rospy std_msgs
+#  DEPENDS system_lib
+)
+
+
+list( APPEND CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -g -ftest-coverage ")
+
+include_directories( include 
+  ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+)  
+
+add_executable(object_detector_node 
+    src/object_detector_node.cpp
+    src/c_object_detector.cpp)
+target_link_libraries( object_detector_node ${catkin_LIBRARIES})
+target_link_libraries( object_detector_node ${OpenCV_LIBRARIES})
+
+
+add_executable(motion_detector_node 
+    src/motion_detector_node.cpp
+    src/c_motion_detector.cpp)
+target_link_libraries( motion_detector_node ${catkin_LIBRARIES})
+target_link_libraries( motion_detector_node ${OpenCV_LIBRARIES})
+
+
+add_executable(thermal_detector_node 
+    src/thermal_detector_node.cpp
+    src/c_thermal_detector.cpp)
+target_link_libraries( thermal_detector_node ${catkin_LIBRARIES})
+target_link_libraries( thermal_detector_node ${OpenCV_LIBRARIES})
+
+
+
+
+
+
+# add_dependencies(label_detector_node polymechanon_vision_msgs_gencpp)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

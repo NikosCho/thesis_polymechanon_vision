@@ -1,8 +1,9 @@
-#ifndef MOTION_DETECTOR_H
-#define MOTION_DETECTOR_H
+#ifndef OBJECT_DETECTOR_H
+#define OBJECT_DETECTOR_H
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 #include "ros/ros.h"
@@ -12,37 +13,46 @@
 
 // Dynamic Reconfigure Headers
 #include <dynamic_reconfigure/server.h>
-#include <victim_detector/MotionDetectorConfig.h>
+#include <victim_detector/ObjectDetectorConfig.h>
+#include <victim_detector/config_PP.h>  //PACKAGE_PATH
 
+#include "opencv2/objdetect/objdetect.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 namespace polymechanon_vision {
 
 
-class MotionDetector
+class ObjectDetector
 {
 public:
-	MotionDetector();
-	~MotionDetector();
+	ObjectDetector();
+	~ObjectDetector();
 
 
 private:
 	// ROS node's setup
 	ros::NodeHandle _node;
 	image_transport::Subscriber _subscriber_to_img_node;
-	dynamic_reconfigure::Server<motion_detector::MotionDetectorConfig> _dyn_rec_server;
+	dynamic_reconfigure::Server<object_detector::ObjectDetectorConfig> _dyn_rec_server;
+
+	cv::CascadeClassifier _object_cascade;
 
 	bool _debugging;
-	int _detection_mode;
+	int _minimum_object_size;
+	int _maximum_object_size;
 
 	// Node's setup
 	void imageCallback(const sensor_msgs::ImageConstPtr& msg);
 	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "/usb_camera/image_raw");	
 	void loadDetectorSettings(const ros::NodeHandle& node);
 	// void dynRecCallback(victim_detector::VictimDetectorConfig &config, uint32_t level);
-	void dynRecCallback(motion_detector::MotionDetectorConfig &config, uint32_t level);
+	void dynRecCallback(object_detector::ObjectDetectorConfig &config, uint32_t level);
+	void loadCascadeClassifier(const std::string& path);
 
 
 
+	void detectObject(cv::Mat& image_to_scan, cv::CascadeClassifier& classifier);
 
 
 
@@ -57,7 +67,7 @@ private:
 };
 
 } // "namespace polymechanon_vision"
-#endif // MOTION_DETECTOR_H
+#endif // OBJECT_DETECTOR_H
 
 
 
