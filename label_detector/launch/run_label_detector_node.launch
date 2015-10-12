@@ -28,6 +28,7 @@
 		<!-- LABEL DETECTOR -->
 		<node pkg="label_detector" type="label_detector_node" name="label_detector" output="screen" >
 			<param name="input_image_topic" type="string" value="/usb_camera/image_raw" />
+			<!-- <param name="input_image_topic" type="string" value="/camera/image_raw" /> -->
 			<param name="Debugging" value="true" />
 
 			<param name="QR_Switch" value="true" />

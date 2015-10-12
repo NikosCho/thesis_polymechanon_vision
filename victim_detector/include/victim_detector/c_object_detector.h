@@ -44,7 +44,7 @@ private:
 
 	// Node's setup
 	void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "/usb_camera/image_raw");	
+	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "/camera/image_raw");	
 	void loadDetectorSettings(const ros::NodeHandle& node);
 	// void dynRecCallback(victim_detector::VictimDetectorConfig &config, uint32_t level);
 	void dynRecCallback(object_detector::ObjectDetectorConfig &config, uint32_t level);

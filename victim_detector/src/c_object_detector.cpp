@@ -97,7 +97,7 @@ void ObjectDetector::imageCallback(const sensor_msgs::ImageConstPtr& img_sub_msg
 // If there is no topic's name on server, take the function's paramteter.
 std::string ObjectDetector::loadTopic(const ros::NodeHandle& node, std::string topic_name /* = "camera/image_raw" */ ) 
 {	
-	std::string topic_param_name("victim_detector/input_image_topic");
+	std::string topic_param_name("object_detector/input_image_topic");
 
 	auto gettopic = [&] (const std::string& name_of_topic_variable) {
 		std::string topic_param;

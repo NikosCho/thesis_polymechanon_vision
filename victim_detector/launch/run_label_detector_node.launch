@@ -1,33 +1,48 @@
 <?xml version="1.0"?>
 <launch>
 
-	<node pkg="usb_cam" type="usb_cam_node" name="usb_camera" >
+<!-- 	<node pkg="usb_cam" type="usb_cam_node" name="usb_camera" >
 		<param name="image_width" type="int" value="640" />
 		<param name="image_height" type="int" value="480" />
 		<param name="framerate" type="int" value="120" />
 		<param name="video_device" type="string" value="/dev/video0" />
 		<param name="camera_frame_id" type="string" value="/camera_frame" />
-	</node>
+	</node> -->
 
+	<node pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera" >  
+		<param name="width" type="int" value="640" />
+		<param name="height" type="int" value="480" />
+		<param name="fps" type="int" value="120" />
+		<param name="frame" type="string" value="wide_stereo" />
+		<param name="auto_focus" type="bool" value="False" />
+		<param name="focus_absolute" type="int" value="0" />
+
+		<param name="device" type="string" value="/dev/video0" />
+
+		<param name="camera_info_url" type="string" value="file://$(find uvc_camera)/example.yaml" />
+		<param name="frame_id" type="string" value="/camera_frame" />
+	</node>
 
 	<!-- OBJECT DETECTOR -->
-	<node pkg="victim_detector" type="object_detector_node" name="object_detector" output="screen" >
-		<param name="input_image_topic" type="string" value="/usb_camera/image_raw" />
+<!-- 	<node pkg="victim_detector" type="object_detector_node" name="object_detector" output="screen" >
+			<param name="input_image_topic" type="string" value="/camera/image_raw" />
 		<param name="MIN_object_size" value="100" />
 		<param name="MAX_object_size" value="1000" />
-	</node>
+	</node> -->
+	
 	<!-- THERMAL DETECTOR -->
 <!-- 	<node pkg="victim_detector" type="thermal_detector_node" name="thermal_detector" output="screen" >
-		<param name="input_image_topic" type="string" value="/usb_camera/image_raw" />
+		<param name="input_image_topic" type="string" value="/camera/image_raw" />
 		<param name="MIN_blob_size" value="100" />
 		<param name="MAX_blob_size" value="1000" />
 	</node> -->
 
 	<!-- MOTION DETECTOR -->
-<!-- 	<node pkg="victim_detector" type="motion_detector_node" name="motion_detector" output="screen" >
-		<param name="input_image_topic" type="string" value="/usb_camera/image_raw" />
+	<node pkg="victim_detector" type="motion_detector_node" name="motion_detector" output="screen" >
+		<param name="input_image_topic" type="string" value="/camera/image_raw" />
 		<param name="Detection_mode" value="0" />
-	</node> -->
+		<param name="Thres_method" value="0" />
+	</node>
 
 	<!-- RQT -->
 	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" />

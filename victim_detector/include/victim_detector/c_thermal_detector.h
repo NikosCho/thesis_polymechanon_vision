@@ -35,13 +35,18 @@ private:
 	int _minimum_blob_size;
 	int _maximum_blob_size;
 
+	cv::SimpleBlobDetector _detector;
+
+	// cv::SimpleBlobDetector _ptr;
 	// Node's setup
 	void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "/usb_camera/image_raw");	
+	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "/camera/image_raw");	
 	void loadDetectorSettings(const ros::NodeHandle& node);
 	// void dynRecCallback(victim_detector::VictimDetectorConfig &config, uint32_t level);
 	void dynRecCallback(thermal_detector::ThermalDetectorConfig &config, uint32_t level);
 
+	void setupDetector();
+	void detectBlobs(cv::Mat& image_to_scan);
 
 
 
