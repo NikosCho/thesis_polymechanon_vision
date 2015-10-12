@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="res_rob_vision" type="camera_publisher_node" name="camera_publisher" output="screen">
+        <param name="topic" value="camera/image_input" />
+        <param name="camera" value="0" />
+  </node>
+</launch>

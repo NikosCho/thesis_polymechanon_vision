@@ -1,0 +1,21 @@
+%YAML:1.0
+YELLOW: !!opencv-matrix
+   rows: 1
+   cols: 6
+   dt: i
+   data: [ 0, 155, 74, 255, 248, 240 ]
+ORANGE: !!opencv-matrix
+   rows: 1
+   cols: 6
+   dt: i
+   data: [ 0, 0, 0, 0, 0, 0 ]
+RED: !!opencv-matrix
+   rows: 1
+   cols: 6
+   dt: i
+   data: [ 0, 0, 0, 0, 0, 0 ]
+WALL: !!opencv-matrix
+   rows: 1
+   cols: 6
+   dt: i
+   data: [ 0, 0, 0, 0, 0, 0 ]

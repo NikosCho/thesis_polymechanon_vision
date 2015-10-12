@@ -34,7 +34,7 @@ private:
 	// ROS node's setup
 	ros::NodeHandle _node;
 	image_transport::Subscriber _subscriber_to_img_node;
-	dynamic_reconfigure::Server<object_detector::ObjectDetectorConfig> _dyn_rec_server;
+	dynamic_reconfigure::Server<victim_detector::ObjectDetectorConfig> _dyn_rec_server;
 
 	cv::CascadeClassifier _object_cascade;
 
@@ -47,7 +47,7 @@ private:
 	std::string loadTopic(const ros::NodeHandle& node, std::string topic_name = "/camera/image_raw");	
 	void loadDetectorSettings(const ros::NodeHandle& node);
 	// void dynRecCallback(victim_detector::VictimDetectorConfig &config, uint32_t level);
-	void dynRecCallback(object_detector::ObjectDetectorConfig &config, uint32_t level);
+	void dynRecCallback(victim_detector::ObjectDetectorConfig &config, uint32_t level);
 	void loadCascadeClassifier(const std::string& path);
 
 

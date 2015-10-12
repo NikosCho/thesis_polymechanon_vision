@@ -149,7 +149,7 @@ void ObjectDetector::loadCascadeClassifier(const string& path)
 }
 
 // Dynamic reconfigure using command line reconfiguration or rqt-plugin
-void ObjectDetector::dynRecCallback(object_detector::ObjectDetectorConfig &config, uint32_t level)
+void ObjectDetector::dynRecCallback(victim_detector::ObjectDetectorConfig &config, uint32_t level)
 {	
     ROS_INFO("ObjectDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[QR SIDE MIN_OBJECT_SIZE]-%d \n\t[MAX_OBJECT_SIZE SIDE LENGTH]-%d ",
                 config.Debugging?"ON":"OFF",

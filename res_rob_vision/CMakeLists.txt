@@ -1,15 +1,36 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(detection_utilities)
+project(res_rob_vision)
+
+find_package(OpenCV REQUIRED)
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
   roscpp
   rospy
   std_msgs
+  message_generation
+  sensor_msgs
+  OpenCV
+  cv_bridge
+  image_transport
+  polymechanon_vision_msgs
 )
 
+generate_dynamic_reconfigure_options(
+  cfg/AreaBorders.cfg
+  cfg/CircleDetection.cfg
+)
+
+
+set(PACKAGE_PATH "${PROJECT_SOURCE_DIR}")
+configure_file(${PROJECT_SOURCE_DIR}/config/config_PP.h.in ${PROJECT_SOURCE_DIR}/include/res_rob_vision/config_PP.h)
+
+# find_package(OpenCV REQUIRED)
+  
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -28,10 +49,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## * Let MSG_DEP_SET be the set of packages whose message types you use in
 ##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
 ## * In the file package.xml:
-##   * add a build_depend tag for "message_generation"
 ##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
-##     but can be declared for certainty nonetheless:
+##   * If MSG_DEP_SET isn't empty the following dependencies might have been
+##     pulled in transitively but can be declared for certainty nonetheless:
+##     * add a build_depend tag for "message_generation"
 ##     * add a run_depend tag for "message_runtime"
 ## * In this file (CMakeLists.txt):
 ##   * add "message_generation" and every package in MSG_DEP_SET to
@@ -44,11 +65,6 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -65,30 +81,6 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
 
 ###################################
 ## catkin specific configuration ##
@@ -100,9 +92,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES detection_utilities
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+ INCLUDE_DIRS include
+#  LIBRARIES res_rob_vision
+ CATKIN_DEPENDS dynamic_reconfigure roscpp rospy message_runtime polymechanon_vision_msgs
 #  DEPENDS system_lib
 )
 
@@ -113,29 +105,25 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(
+include_directories( include 
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(detection_utilities
-#   src/${PROJECT_NAME}/detection_utilities.cpp
+## Declare a cpp library
+# add_library(res_rob_vision
+#   src/${PROJECT_NAME}/res_rob_vision.cpp
 # )
 
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(detection_utilities ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+## Declare a cpp executable
+# add_executable(res_rob_vision_node src/res_rob_vision_node.cpp)
 
-## Declare a C++ executable
-# add_executable(detection_utilities_node src/detection_utilities_node.cpp)
-
-## Add cmake target dependencies of the executable
-## same as for the library above
-# add_dependencies(detection_utilities_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+## Add cmake target dependencies of the executable/library
+## as an example, message headers may need to be generated before nodes
+# add_dependencies(res_rob_vision_node res_rob_vision_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(detection_utilities_node
+# target_link_libraries(res_rob_vision_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -154,7 +142,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS detection_utilities detection_utilities_node
+# install(TARGETS res_rob_vision res_rob_vision_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -179,10 +167,40 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_detection_utilities.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_res_rob_vision.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+
+# add_executable( camera_publisher_node src/camera_publisher.cpp )
+# target_link_libraries(camera_publisher_node ${catkin_LIBRARIES} )
+# target_link_libraries( camera_publisher_node ${OpenCV_LIBRARIES} )
+
+
+# # Color configurator ###############################################
+add_executable( configure_area_colors src/configure_area_colors.cpp )
+target_link_libraries( configure_area_colors ${catkin_LIBRARIES} )
+target_link_libraries( configure_area_colors ${OpenCV_LIBRARIES} )
+# add_dependencies( configure_area_colors ${PROJECT_NAME}_gencfg)
+# ####################################################################
+
+
+add_executable( area_borders_node src/area_borders_node.cpp 
+	src/c_borders_detection.cpp)
+target_link_libraries(area_borders_node ${catkin_LIBRARIES} )
+target_link_libraries( area_borders_node ${OpenCV_LIBRARIES} )
+add_dependencies( area_borders_node ${PROJECT_NAME}_gencfg)
+add_dependencies( area_borders_node polymechanon_vision_msgs_gencpp)
+
+# # add_dependencies(area_borders_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable( circle_detection_node src/circle_detection_node.cpp 
+	src/c_circle_detection.cpp)
+target_link_libraries(circle_detection_node ${catkin_LIBRARIES} )
+target_link_libraries( circle_detection_node ${OpenCV_LIBRARIES} )
+add_dependencies( circle_detection_node ${PROJECT_NAME}_gencfg)
+add_dependencies( area_borders_node polymechanon_vision_msgs_gencpp)

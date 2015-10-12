@@ -133,7 +133,7 @@ void ThermalDetector::loadDetectorSettings(const ros::NodeHandle& node)
 
 
 // Dynamic reconfigure using command line reconfiguration or rqt-plugin
-void ThermalDetector::dynRecCallback(thermal_detector::ThermalDetectorConfig &config, uint32_t level)
+void ThermalDetector::dynRecCallback(victim_detector::ThermalDetectorConfig &config, uint32_t level)
 {	
     ROS_INFO("ThermalDetector -- Reconfigure Request: \n\t[DEBUGGING]-%s \n\t[MIN_OBJECT_SIZE]-%d \n\t[MAX_OBJECT_SIZE]-%d ",
                 config.Debugging?"ON":"OFF",

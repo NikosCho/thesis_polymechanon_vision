@@ -24,6 +24,9 @@ generate_dynamic_reconfigure_options(
   dyn_cfg/ThermalDetector.cfg
 )
 
+include_directories(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake) 
+
+
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES test_package
@@ -44,6 +47,7 @@ add_executable(object_detector_node
     src/c_object_detector.cpp)
 target_link_libraries( object_detector_node ${catkin_LIBRARIES})
 target_link_libraries( object_detector_node ${OpenCV_LIBRARIES})
+add_dependencies( object_detector_node ${PROJECT_NAME}_gencfg)
 
 
 add_executable(motion_detector_node 
@@ -51,6 +55,7 @@ add_executable(motion_detector_node
     src/c_motion_detector.cpp)
 target_link_libraries( motion_detector_node ${catkin_LIBRARIES})
 target_link_libraries( motion_detector_node ${OpenCV_LIBRARIES})
+add_dependencies( motion_detector_node ${PROJECT_NAME}_gencfg)
 
 
 add_executable(thermal_detector_node 
@@ -58,11 +63,13 @@ add_executable(thermal_detector_node
     src/c_thermal_detector.cpp)
 target_link_libraries( thermal_detector_node ${catkin_LIBRARIES})
 target_link_libraries( thermal_detector_node ${OpenCV_LIBRARIES})
+add_dependencies( thermal_detector_node ${PROJECT_NAME}_gencfg)
 
 
 
 
-
+ # add_executable(dynamic_reconfigure_node src/dynamic_reconfigure_node.cpp)
+ # add_dependencies(dynamic_reconfigure_node ${PROJECT_NAME}_gencfg)
 
 # add_dependencies(label_detector_node polymechanon_vision_msgs_gencpp)
 
