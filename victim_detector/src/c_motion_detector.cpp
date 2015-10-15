@@ -350,7 +350,7 @@ void MotionDetector::phaseCorrelation(cv::Mat &frame, double &radius, double &an
     {
         // draw a circle and line indicating the shift direction...
         cv::Point center(_frames_sequence[1].cols >> 1, _frames_sequence[1].rows >> 1);
-        circle(frame, center, (int)radius, cv::Scalar(0, 255, 0), 3, CV_AA);
+        circle(frame, center, (int)radius, cv::Scalar(125, 125, 125), 3, CV_AA);
         line(frame, center, cv::Point(center.x + (int)shift.x, center.y + (int)shift.y), cv::Scalar(0, 255, 0), 3, CV_AA);
     }
 }

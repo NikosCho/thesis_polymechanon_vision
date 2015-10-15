@@ -49,26 +49,27 @@ void ThermalDetector::setupDetector()
 {
 	// Setup SimpleBlobDetector parameters.
 	cv::SimpleBlobDetector::Params params;
+	params.blobColor = 255;
 	 
 	// Change thresholds
-	params.minThreshold = 10;
-	params.maxThreshold = 200;
+	params.minThreshold = 50;
+	params.maxThreshold = 255;
 	 
 	// Filter by Area.
 	params.filterByArea = true;
-	params.minArea = 1500;
+	params.minArea = 500;
 	 
-	// Filter by Circularity
-	params.filterByCircularity = true;
-	params.minCircularity = 0.1;
+	// // Filter by Circularity
+	// params.filterByCircularity = true;
+	// params.minCircularity = 0.1;
 	 
-	// Filter by Convexity
-	params.filterByConvexity = true;
-	params.minConvexity = 0.87;
+	// // Filter by Convexity
+	// params.filterByConvexity = true;
+	// params.minConvexity = 0.87;
 	 
-	// Filter by Inertia
-	params.filterByInertia = true;
-	params.minInertiaRatio = 0.01;
+	// // Filter by Inertia
+	// params.filterByInertia = true;
+	// params.minInertiaRatio = 0.01;
 
 	// Set up detector with params
 	_detector = cv::SimpleBlobDetector(params);
@@ -76,14 +77,19 @@ void ThermalDetector::setupDetector()
 }
 
 void ThermalDetector::detectBlobs(cv::Mat& image_to_scan)
-{
+{	
+	cvtColor(image_to_scan,image_to_scan, cv::COLOR_BGR2GRAY);
+	cv::Mat inverted_image;
+	bitwise_not(image_to_scan, inverted_image);
 	std::vector<cv::KeyPoint> keypoints;
-	_detector.detect( image_to_scan, keypoints);
+	_detector.detect( inverted_image, keypoints);
+
+	std::cout << keypoints.size() << std::endl;
 	 
 	cv::Mat image_with_keypoints;
-	drawKeypoints( image_to_scan, keypoints, image_to_scan, cv::Scalar(0,0,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
+	drawKeypoints( inverted_image, keypoints, image_to_scan, cv::Scalar(0,0,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
  
-
+	cv::imshow("Inverted", inverted_image);
 
 }
 

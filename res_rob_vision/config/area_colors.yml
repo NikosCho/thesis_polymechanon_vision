@@ -3,7 +3,7 @@ YELLOW: !!opencv-matrix
    rows: 1
    cols: 6
    dt: i
-   data: [ 0, 155, 74, 255, 248, 240 ]
+   data: [ 12, 0, 176, 52, 255, 255 ]
 ORANGE: !!opencv-matrix
    rows: 1
    cols: 6
@@ -13,9 +13,9 @@ RED: !!opencv-matrix
    rows: 1
    cols: 6
    dt: i
-   data: [ 0, 0, 0, 0, 0, 0 ]
+   data: [ 151, 103, 0, 192, 204, 255 ]
 WALL: !!opencv-matrix
    rows: 1
    cols: 6
    dt: i
-   data: [ 0, 0, 0, 0, 0, 0 ]
+   data: [ 0, 0, 125, 23, 119, 255 ]
