@@ -250,147 +250,22 @@ void BordersDetection::drawALLBorders(cv::Mat &input_image, cv::Mat &hsv_input_i
         inrange_MAX = cv::Scalar(color_hsv_values_[i][4],color_hsv_values_[i][5],color_hsv_values_[i][6]);
         cv::inRange(hsv_input_image, inrange_MIN, inrange_MAX, mask);
 
-        // if ( i == 2) {
+        stringstream text;
+        text << "aretouli_mask" << i;
+        string window_name_mask = text.str();
+        stringstream text2;
+        text2 << "aretouli_edges" << i;
+        string window_name_edges = text2.str();
 
-            stringstream text;
-            text << "aretouli_mask" << i;
-            string window_name_mask = text.str();
-            stringstream text2;
-            text2 << "aretouli_edges" << i;
-            string window_name_edges = text2.str();
-
-        // }
         /////////////////////////////////////////
         // cv::Mat mask_edges(mask.size(), CV_MAKETYPE(mask.depth(), 1));   // To hold Grayscale Image
         cv::Mat mask_edges;   // To hold Grayscale Image
 
+        cv::imshow(window_name_mask, mask);
         Canny(mask, mask_edges, 100 , 200, 3);   // Apply Canny edge detection on the img_gray image
-        if ( i == 2) {
-            cv::imshow(window_name_edges, mask_edges);
-            cv::imshow(window_name_mask, mask);
-        }
-            // cv::imshow(window_name_mask, mask);
+        cv::imshow(window_name_edges, mask_edges);
 
         cv::HoughLinesP( mask, lines, 5, 2*CV_PI/180, houghlinesp_parameters_[0], houghlinesp_parameters_[1], houghlinesp_parameters_[2] );
-
-        // cv::Mat mymask(mask.rows,mask.cols, CV_8UC1  );
-        cv::Mat mymask = cv::Mat::zeros(mask.rows, mask.cols, CV_8UC1);
-
-        double x_ = .0;
-        double y_ = .0;
-        // double xy = .0;
-
-        int points_counter = 0;
-
-        // std::cout << 
-        // // mask.at<double>(300,240) 
-        // // mask.get(300,240) 
-        // mask.at<uchar>(300,240) 
-        // << std::endl;
-
-        //         cv::Mat element = getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( 3, 3 ) );
-        // cv::dilate( mask, mask, element ); 
-        // cv::erode( mask, mask, element );
-        //         cv::imshow("geia", mask);
-
-        int y_counter = 0;
-        int y_sum = 0;
-
-        // for ( int px = 0; px < mask.cols; px++)
-        // {   y_counter = 0;
-        //     y_sum = 0;
-        //     for ( int py = 0; py < mask.rows; py++)
-        //     {
-        //         if ( mask.at<uchar>(py,px) != 0) {
-        //             y_sum += py;
-        //             y_counter++;
-        //             // mask.at<uchar>(px,py) = '\0';
-        //         }
-        //     }
-        //     if ( y_counter > 10 )
-        //         // std::cout << y_sum / y_counter << std::endl;
-        //         mymask.at<uchar>(y_sum / y_counter, px) = 255;
-        // }
-        // if (i == 2) {
-        //     cv::imshow("wraia", mymask);
-        // }
-
-        for ( int px = 0; px < mask.cols; px++)
-        {
-            for ( int py = 0; py < mask.rows; py++)
-            {
-                if ( mask.at<uchar>(py,px) != 0) {
-                    // xy += px * py;
-                    x_ += px;
-                    y_ += py;
-                    points_counter++;
-                }
-            }
-        }
-
-        if ( points_counter != 0 )
-        {
-            x_ = x_ / points_counter;
-            y_ = y_ / points_counter;
-        }
-
-
-        // std::cout << "=== " << i <<" \n" <<
-        // countNonZero(mask) << "---" <<
-        // points_counter
-        // << std::endl;
-
-        // std::cout << "=== " << i <<" \n" <<
-        // x_ << "---" << y_
-        // << std::endl;
-
-        if (i == 2) {
-            double sum = .0;
-            double sx2 = .0;
-
-            for ( int px = 0; px < mask.cols; px++)
-            {
-                for ( int py = 0; py < mask.rows; py++)
-                {
-
-                    if ( mask.at<uchar>(py,px) != 0) {
-
-                        sum += (px - x_)*(py - y_);
-                        sx2 += pow(px - x_,2);
-                        // sum += (static_cast<double>(px) - x_)* (static_cast<int>(py) - y_);
-                        // sx2 += pow(static_cast<double>(px) - x_,2);
-
-                    }
-
-                }
-            }
-            double slope = sum / sx2;
-
-            // double slope = ( points_counter*xy - SumX*SumY ) / ( points_counter*SumX2 -  pow(SumX, 2));            
-
-            // double slope = sum / sx2;
-            double c = y_ - slope*x_;
-
-        std::cout << "=== " << i <<" \n" <<
-slope
-        << std::endl;
-
-
-            std::cout << "=== " << i <<" \n" <<
-            slope 
-            << std::endl;        
-
-            Point2D p, q;
-            p.x = 0;
-            q.x = input_image.cols;
-            p.y = slope * p.x + c;
-            q.y = slope * q.x + c;
-
-
-            cv::line(input_image, p, q, cv::Scalar(0,255,0), 10);
-
-
-        }
         //////////////////////////////////////////
 
         // cv::HoughLinesP( mask, lines, 5, 2*CV_PI/180, 100, 100, 50 );
@@ -401,40 +276,40 @@ slope
         // findLowestPoints(lines,lowestline);
         // findGoodPoints(lines,lowestline);
 
-        // for ( int j=0; j<lines.size(); j++)  {
-        //     templine = lines[j];
-        //     // border_upper_rectangle.clear();
-        //     // border_upper_rectangle.push_back(cv::Point(templine[0], templine[1]));
-        //     // border_upper_rectangle.push_back(cv::Point(templine[2], templine[3]));
-        //     // border_upper_rectangle.push_back(cv::Point(templine[2], 0));
-        //     // border_upper_rectangle.push_back(cv::Point(templine[0], 0));
-        //     border_upper_rectangle.clear();
-        //     border_upper_rectangle.push_back(cv::Point(templine[0], templine[1]));
-        //     border_upper_rectangle.push_back(cv::Point(templine[2], templine[3]));
+        for ( int j=0; j<lines.size(); j++)  {
+            templine = lines[j];
+            // border_upper_rectangle.clear();
+            // border_upper_rectangle.push_back(cv::Point(templine[0], templine[1]));
+            // border_upper_rectangle.push_back(cv::Point(templine[2], templine[3]));
+            // border_upper_rectangle.push_back(cv::Point(templine[2], 0));
+            // border_upper_rectangle.push_back(cv::Point(templine[0], 0));
+            border_upper_rectangle.clear();
+            border_upper_rectangle.push_back(cv::Point(templine[0], templine[1]));
+            border_upper_rectangle.push_back(cv::Point(templine[2], templine[3]));
 
-        //     border_upper_rectangle.push_back(cv::Point(templine[2], 0));
-        //     border_upper_rectangle.push_back(cv::Point(templine[0], 0));
+            border_upper_rectangle.push_back(cv::Point(templine[2], 0));
+            border_upper_rectangle.push_back(cv::Point(templine[0], 0));
 
-        //     switch((BorderColor)color_hsv_values_[i][0])  {
-        //         case YELLOW:
-        //             // cv::fillConvexPoly(input_image, border_upper_rectangle,cv::Scalar(0,0,0), 8, 0);
-        //             cv::line( input_image, cv::Point(templine[0], templine[1]),
-        //                         cv::Point(templine[2], templine[3]), cv::Scalar(0,255,255), 4);
-        //             break;
-        //         case ORANGE:
-        //             // cv::fillConvexPoly(input_image, border_upper_rectangle,cv::Scalar(0,0,0), 8, 0);
-        //             cv::line( input_image, cv::Point(templine[0], templine[1]),
-        //                         cv::Point(templine[2], templine[3]), cv::Scalar(0,122,255), 4);;
-        //             break;
-        //         case RED:
-        //             // cv::fillConvexPoly(input_image, border_upper_rectangle,cv::Scalar(0,0,0), 8, 0);
-        //             cv::line( input_image, cv::Point(templine[0], templine[1]),
-        //                         cv::Point(templine[2], templine[3]), cv::Scalar(0,0,255), 4);
-        //             break;
-        //         default:
-        //             std::cout << "xese mesa" << std::endl;    
-        //     }
-        // }
+            switch((BorderColor)color_hsv_values_[i][0])  {
+                case YELLOW:
+                    // cv::fillConvexPoly(input_image, border_upper_rectangle,cv::Scalar(0,0,0), 8, 0);
+                    cv::line( input_image, cv::Point(templine[0], templine[1]),
+                                cv::Point(templine[2], templine[3]), cv::Scalar(0,255,255), 4);
+                    break;
+                case ORANGE:
+                    // cv::fillConvexPoly(input_image, border_upper_rectangle,cv::Scalar(0,0,0), 8, 0);
+                    cv::line( input_image, cv::Point(templine[0], templine[1]),
+                                cv::Point(templine[2], templine[3]), cv::Scalar(0,122,255), 4);;
+                    break;
+                case RED:
+                    // cv::fillConvexPoly(input_image, border_upper_rectangle,cv::Scalar(0,0,0), 8, 0);
+                    cv::line( input_image, cv::Point(templine[0], templine[1]),
+                                cv::Point(templine[2], templine[3]), cv::Scalar(0,0,255), 4);
+                    break;
+                default:
+                    std::cout << "xese mesa" << std::endl;    
+            }
+        }
     }
 }
 
@@ -559,31 +434,3 @@ cv::String BordersDetection::getStringColorName(BorderColor whatcolor)
             return "NOCOLOR";
     }
 }
-
-// void BordersDetection::drawLine(cv::Mat &inputimage, const vector<Point2D>& line,  cv::Scalar color)
-// {   
-
-//         Point2D p, q;
-//         Point2D p1 = line[0];
-//         Point2D p2 = line[1];
-//         // Check if the line is a vertical line because vertical lines don't have slope
-//         if (p1.x != p2.x)
-//         {
-//                 p.x = 0;
-//                 q.x = inputimage.cols;
-//                 // Slope equation (y1 - y2) / (x1 - x2)
-//                 float m = (p1.y - p2.y) / (p1.x - p2.x);
-//                 // Line equation:  y = mx + b
-//                 float b = p1.y - (m * p1.x);
-//                 p.y = m * p.x + b;
-//                 q.y = m * q.x + b;
-//         }
-//         else
-//         {
-//                 p.x = q.x = p2.x;
-//                 p.y = 0;
-//                 q.y = inputimage.rows;
-//         }
-
-//         cv::line(inputimage, p, q, color, 2);
-// }

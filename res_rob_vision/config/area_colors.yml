@@ -13,7 +13,7 @@ RED: !!opencv-matrix
    rows: 1
    cols: 6
    dt: i
-   data: [ 151, 103, 0, 192, 204, 255 ]
+   data: [ 160, 73, 0, 185, 255, 255 ]
 WALL: !!opencv-matrix
    rows: 1
    cols: 6

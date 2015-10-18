@@ -25,8 +25,6 @@
 
 enum BorderColor {YELLOW , ORANGE, RED, WALL};		// yellow: 0,255,255 | orange: BGR-0,122,255 | red: BGR-0,0,255 |
 
-typedef cv::Point2d Point2D;
-
 class BordersDetection
 {
 public:
@@ -78,8 +76,6 @@ private:
 	float findLength(cv::Vec4i line);
 	void findPerfectPoints(std::vector<cv::Vec4i> &lines,std::vector<cv::Point2d> &templine);
 	void findBiggest(std::vector<cv::Vec4i> lines,std::vector<cv::Point2d> &templine);
-
-	// void drawLine(cv::Mat &inputimage, const std::vector<Point2D>& line,  cv::Scalar color);
 
 
 	void printColors();
